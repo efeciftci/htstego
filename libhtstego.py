@@ -1,6 +1,8 @@
 import numpy as np
 from skimage import io, metrics
 
+__version__ = '0.3'
+
 
 def floyd(I):
     height, width = I.shape
@@ -99,7 +101,6 @@ def findEmbedPositionErrDiff(currentSet, stegoPixel):
 
 
 def snr(o, n):
-    # print(o)
     ps = np.mean(o**2)
     pn = np.mean((o - n)**2)
     return 10 * np.log10(ps / pn)
