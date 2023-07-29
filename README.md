@@ -16,24 +16,32 @@ or
     pip install -r requirements.txt
 
 ## How To Use
-This tool comes with the following parameters:
+Available options:
 
-      -h, --help            show this help message and exit
-      -v, --version         show program's version number and exit
-      --htmethod HTMETHOD   halftoning method (pattern, errdiff) (default: errdiff)
-      --htmethodtype HTMETHODTYPE
-                            halftoning type (binary, color) (default: binary)
-      --nshares NSHARES     number of output shares to generate (default: 4)
-      --imparam IMPARAM     input image (default: airplane80)
-      --txtparam TXTPARAM   input payload (default: 512)
-      --errdiffmethod ERRDIFFMETHOD
-                            error diffusion method (fan, floyd, or jajuni) (default: floyd)
-      --no-output-files     do not produce output images (default: false)
-      --json                display output in JSON format
+      -h, --help                       show this help message and exit
+      -v, --version                    show program's version number and exit
 
-Executing the tool as below uses the default parameters listed above:
+Required Options:
 
-      ./main.py
+      --htmethod HTMETHOD              halftoning method (pattern, errdiff)
+      --htmethodtype HTMETHODTYPE      halftoning type (binary, color)
+      --cover COVER                    input image
+      --payload PAYLOAD                input payload
+      --nshares NSHARES                number of output shares to generate
+
+Error Diffusion Options:
+
+      --errdiffmethod ERRDIFFMETHOD    error diffusion method (fan, floyd, or jajuni)
+
+Output Options:
+
+      --no-output-files                do not produce output images
+      --output-format OUTPUT_FORMAT    output format (default, json)
+      --silent                         do not display output on screen
+
+### Example
+
+      ./main.py -- htmethod errdiff --htmethodtype binary --cover airplane80 --payload 512 --nshares 4 --errdiffmethod floyd
     
 When executed as above, the following output will be produced:
 

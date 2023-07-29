@@ -1,7 +1,7 @@
 import numpy as np
 from skimage import io, metrics
 
-__version__ = '0.3'
+__version__ = '0.4'
 
 
 def floyd(I):
@@ -38,7 +38,7 @@ def fan(I):
                 I[y, x + 1] += err * 7 / 16
             if y < height - 1:
                 if x > 1:
-                    I[y + 1, x - 2] = I[y + 1, x - 2] + err * 1 / 16
+                    I[y + 1, x - 2] += err * 1 / 16
                 if x > 0:
                     I[y + 1, x - 1] = I[y + 1, x - 1] + err * 3 / 16
                 I[y + 1, x] = I[y + 1, x] + err * 5 / 16
@@ -106,11 +106,7 @@ def snr(o, n):
     return 10 * np.log10(ps / pn)
 
 
-def htstego_errdiffbin(NSHARES=4,
-                       imparam='airplane80',
-                       txtparam=512,
-                       errdiffmethod='floyd',
-                       nooutput=False):
+def htstego_errdiffbin(NSHARES, imparam, txtparam, errdiffmethod, nofileout):
     errdifffun = globals().get(errdiffmethod)
     imfile = f'{imparam}_256gray'
     impath = f'cover_imgs/{imfile}.png'
@@ -126,13 +122,12 @@ def htstego_errdiffbin(NSHARES=4,
         print(f'[{NSHARES:2d} {imparam:9s} {txtparam:4d}] message too long!')
         return
 
-    normalOutput = errdifffun(I)  # floyd(I), fan(I)
+    normalOutput = errdifffun(I)
     stegoOutputs = np.zeros((I.shape[0], I.shape[1], NSHARES))
     linearImage = normalOutput.reshape(1, -1)[0]
     linearStegoImages = np.tile(linearImage, (NSHARES, 1))
 
-    snrs = np.zeros((NSHARES, 2))
-    ssims = np.zeros((NSHARES, 1))
+    results = np.zeros((NSHARES, 3))
 
     messagePos = 0
     for i in range(0, M * N, blockSize):
@@ -159,7 +154,7 @@ def htstego_errdiffbin(NSHARES=4,
 
     normalOutput = (normalOutput * 255).astype(np.uint8)
 
-    if nooutput == False:
+    if nofileout == False:
         normalOutputPath = f'output/{imfile}_hterrdiffbin_regular_{errdiffmethod}.png'
         io.imsave(normalOutputPath, normalOutput)
         stegoOutputPaths = []
@@ -167,17 +162,15 @@ def htstego_errdiffbin(NSHARES=4,
     for i in range(NSHARES):
         stegoOutputs[:, :, i] = linearStegoImages[i, :].reshape(M, N)
         stegoImage = (stegoOutputs[:, :, i] * 255).astype(np.uint8)
-        if nooutput == False:
-            stegoOutputPaths.append(
-                f'output/{imfile}_hterrdiffbin_stego_msg{txtparam}_{i+1}of{NSHARES}_{errdiffmethod}.png'
-            )
+        if nofileout == False:
+            stegoOutputPaths.append(f'output/{imfile}_hterrdiffbin_stego_msg{txtparam}_{i+1}of{NSHARES}_{errdiffmethod}.png')
             io.imsave(stegoOutputPaths[i], stegoImage)
 
-        snrs[i, 0] = snr(normalOutput, stegoImage)
-        snrs[i, 1] = metrics.peak_signal_noise_ratio(stegoImage, normalOutput)
-        ssims[i] = metrics.structural_similarity(stegoImage, normalOutput)
+        results[i, 0] = snr(normalOutput, stegoImage)
+        results[i, 1] = metrics.peak_signal_noise_ratio(stegoImage, normalOutput)
+        results[i, 2] = metrics.structural_similarity(stegoImage, normalOutput)
 
-    avg_snr = np.mean(snrs[:, 0])
-    avg_psnr = np.mean(snrs[:, 1])
-    avg_ssim = np.mean(ssims)
+    avg_snr = np.mean(results[:, 0])
+    avg_psnr = np.mean(results[:, 1])
+    avg_ssim = np.mean(results[:, 2])
     return avg_snr, avg_psnr, avg_ssim
