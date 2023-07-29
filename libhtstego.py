@@ -111,13 +111,13 @@ def htstego_errdiffbin(NSHARES, imparam, txtparam, errdiffmethod, nofileout):
     imfile = f'{imparam}_256gray'
     impath = f'cover_imgs/{imfile}.png'
     I = io.imread(impath, as_gray=True) / 255.0
-    M, N = I.shape
+    M, N = I.shape[:2]
 
     txtfile = f'payloads/payload{txtparam}.txt'
     messageAscii = open(txtfile).read()
     messageBinary = ''.join(format(ord(c), '08b') for c in messageAscii)
 
-    blockSize = I.size // len(messageBinary)
+    blockSize = M*N // len(messageBinary)
     if blockSize == 0:
         print(f'[{NSHARES:2d} {imparam:9s} {txtparam:4d}] message too long!')
         return
@@ -169,6 +169,90 @@ def htstego_errdiffbin(NSHARES, imparam, txtparam, errdiffmethod, nofileout):
         results[i, 0] = snr(normalOutput, stegoImage)
         results[i, 1] = metrics.peak_signal_noise_ratio(stegoImage, normalOutput)
         results[i, 2] = metrics.structural_similarity(stegoImage, normalOutput)
+
+    avg_snr = np.mean(results[:, 0])
+    avg_psnr = np.mean(results[:, 1])
+    avg_ssim = np.mean(results[:, 2])
+    return avg_snr, avg_psnr, avg_ssim
+
+def htstego_errdiffcol(NSHARES, imparam, txtparam, errdiffmethod, nofileout):
+    errdifffun = globals().get(errdiffmethod)
+    imfile = f'{imparam}_256rgb'
+    impath = f'cover_imgs/{imfile}.png'
+    I = io.imread(impath) / 255.0
+    M, N = I.shape[:2]
+
+    txtfile = f'payloads/payload{txtparam}.txt'
+    messageAscii = open(txtfile).read()
+    messageBinary = ''.join(format(ord(c), '08b') for c in messageAscii)
+
+    blockSize = M*N // len(messageBinary)
+    if blockSize == 0:
+        print(f'[{NSHARES:2d} {imparam:9s} {txtparam:4d}] message too long!')
+        return
+
+    normalOutput = np.zeros((I.shape[0], I.shape[1], 3))
+    normalOutput[:,:,0] = errdifffun(I[:,:,0])
+    normalOutput[:,:,1] = errdifffun(I[:,:,1])
+    normalOutput[:,:,2] = errdifffun(I[:,:,2])
+
+    linearImage = np.zeros((I.shape[0] * I.shape[1], 3))
+    linearImage[:,0] = normalOutput[:,:,0].reshape(1,-1)[0]
+    linearImage[:,1] = normalOutput[:,:,1].reshape(1,-1)[0]
+    linearImage[:,2] = normalOutput[:,:,2].reshape(1,-1)[0]
+
+    stegoOutputs = np.zeros((NSHARES, I.shape[0], I.shape[1], 3))
+    linearStegoImages = np.zeros((NSHARES, I.shape[0]*I.shape[1], 3))
+    for i in range(NSHARES):
+        linearStegoImages[i,:,0] = linearImage[:,0]
+        linearStegoImages[i,:,1] = linearImage[:,1]
+        linearStegoImages[i,:,2] = linearImage[:,2]
+
+    results = np.zeros((NSHARES, 3))
+
+    messagePos = 0
+    for i in range(0, M * N, blockSize):
+        if messagePos < len(messageBinary):
+            stegoPixel = int(messageBinary[messagePos])
+            
+            randomChannel = np.random.randint(3)
+            
+            if i + blockSize - 1 > M * N:
+                print('end: ', i + blockSize - 1)
+                break
+
+            currentBlock = linearImage[i:i + blockSize, randomChannel]
+            stegoBlock = currentBlock.copy()
+
+            embedHere = findEmbedPositionErrDiff(currentBlock, stegoPixel)
+            if embedHere == -1:
+                continue
+
+            stegoBlock[embedHere] = stegoPixel
+            randomShare = np.random.randint(NSHARES)
+            linearStegoImages[randomShare, i:i + blockSize, randomChannel] = stegoBlock
+            messagePos += 1
+        else:
+            break
+
+    normalOutput = (normalOutput * 255).astype(np.uint8)
+
+    if nofileout == False:
+        normalOutputPath = f'output/{imfile}_hterrdiffcol_regular_{errdiffmethod}.png'
+        io.imsave(normalOutputPath, normalOutput)
+        stegoOutputPaths = []
+
+    for i in range(NSHARES):
+        for j in range(3):
+            stegoOutputs[i, :, :, j] = linearStegoImages[i, :, j].reshape(M, N)
+        stegoImage = (stegoOutputs[i,:,:, :] * 255).astype(np.uint8)
+        if nofileout == False:
+            stegoOutputPaths.append(f'output/{imfile}_hterrdiffcol_stego_msg{txtparam}_{i+1}of{NSHARES}_{errdiffmethod}.png')
+            io.imsave(stegoOutputPaths[i], stegoImage)
+
+        results[i, 0] = snr(normalOutput, stegoImage)
+        results[i, 1] = metrics.peak_signal_noise_ratio(stegoImage, normalOutput)
+        results[i, 2] = metrics.structural_similarity(stegoImage, normalOutput,channel_axis=2)
 
     avg_snr = np.mean(results[:, 0])
     avg_psnr = np.mean(results[:, 1])
