@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 import argparse, sys
-from libhtstego import htstego_errdiffbin, htstego_errdiffcol
+from libhtstego import htstego_errdiffbin, htstego_errdiffcol, htstego_patbin, htstego_patcol
 
-__version__ = '0.4'
+__version__ = '0.5'
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=f'Halftone Steganography Utility Version {__version__}')
@@ -30,51 +30,35 @@ if __name__ == '__main__':
     args = parser.parse_args()
     if args.htmethod == 'errdiff' and args.colormode=='binary':
         if args.errdiffmethod:
-            [avg_snr, avg_psnr, avg_ssim] = htstego_errdiffbin(NSHARES=args.nshares,
-                                            imparam=args.cover,
-                                            txtparam=args.payload,
-                                            errdiffmethod=args.errdiffmethod,
-                                            nofileout=args.no_output_files)
-            if args.silent == False:
-                if args.output_format == 'json':
-                    import json
-                    print(
-                        json.dumps({
-                            'method': 'erdbin',
-                            'nshares': args.nshares,
-                            'imparam': args.cover,
-                            'txtparam': args.payload,
-                            'avg_snr': round(avg_snr, 4),
-                            'avg_psnr': round(avg_psnr, 4),
-                            'avg_ssim': round(avg_ssim, 4)
-                        }))
-                else:
-                    print(f'[erdbin] [{args.nshares} {args.cover} {args.payload}] [avg_snr: {avg_snr:.4f}] [avg_psnr: {avg_psnr:.4f}] [avg_ssim: {avg_ssim:.4f}]')
+            m, [avg_snr, avg_psnr, avg_ssim] = 'erdbin', htstego_errdiffbin(NSHARES=args.nshares, imparam=args.cover, txtparam=args.payload, errdiffmethod=args.errdiffmethod, nofileout=args.no_output_files)
         else:
             parser.error('--errdiffmethod is required when --htmethod is errdiff')
     elif args.htmethod=='errdiff' and args.colormode=='color':
         if args.errdiffmethod:
-            [avg_snr, avg_psnr, avg_ssim] = htstego_errdiffcol(NSHARES=args.nshares,
-                                            imparam=args.cover,
-                                            txtparam=args.payload,
-                                            errdiffmethod=args.errdiffmethod,
-                                            nofileout=args.no_output_files)
-            if args.silent == False:
-                if args.output_format == 'json':
-                    import json
-                    print(
-                        json.dumps({
-                            'method': 'erdbin',
-                            'nshares': args.nshares,
-                            'imparam': args.cover,
-                            'txtparam': args.payload,
-                            'avg_snr': round(avg_snr, 4),
-                            'avg_psnr': round(avg_psnr, 4),
-                            'avg_ssim': round(avg_ssim, 4)
-                        }))
-                else:
-                    print(f'[erdcol] [{args.nshares} {args.cover} {args.payload}] [avg_snr: {avg_snr:.4f}] [avg_psnr: {avg_psnr:.4f}] [avg_ssim: {avg_ssim:.4f}]')
+            m, [avg_snr, avg_psnr, avg_ssim] = 'erdcol', htstego_errdiffcol(NSHARES=args.nshares, imparam=args.cover, txtparam=args.payload, errdiffmethod=args.errdiffmethod, nofileout=args.no_output_files)
         else:
             parser.error('--errdiffmethod is required when --htmethod is errdiff')
-    else:  #patbin, patcol
-        print('Not yet implemented!')
+    elif args.htmethod=='pattern' and args.colormode=='binary':
+        m, [avg_snr, avg_psnr, avg_ssim] = 'patbin', htstego_patbin(NSHARES=args.nshares, imparam=args.cover, txtparam=args.payload, nofileout=args.no_output_files)
+    elif args.htmethod=='pattern' and args.colormode=='color':
+        m, [avg_snr, avg_psnr, avg_ssim] = 'patcol', htstego_patcol(NSHARES=args.nshares, imparam=args.cover, txtparam=args.payload, nofileout=args.no_output_files)
+    else:
+        print('Incorrect method selection!')
+        sys.exit(1)
+    
+    if args.silent == False:
+        if args.output_format == 'json':
+            import json
+            print(
+                json.dumps({
+                    'method': m,
+                    'nshares': args.nshares,
+                    'imparam': args.cover,
+                    'txtparam': args.payload,
+                    'avg_snr': round(avg_snr, 4),
+                    'avg_psnr': round(avg_psnr, 4),
+                    'avg_ssim': round(avg_ssim, 4)
+                }))
+        else:
+            print(f'[{m}] [{args.nshares} {args.cover} {args.payload}] [avg_snr: {avg_snr:.4f}] [avg_psnr: {avg_psnr:.4f}] [avg_ssim: {avg_ssim:.4f}]')
+            
