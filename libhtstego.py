@@ -103,6 +103,20 @@ def findEmbedPositionErrDiff(currentSet, stegoPixel):
     return embedHere
 
 def findEmbedPositionPat(currentSet):
+    M, N = currentSet.shape
+    if np.sum(np.sum(currentSet)) == 0 or np.sum(np.sum(currentSet)) == M*N:
+        return -1
+    
+    tol = 0
+    sLen = N // 3
+    
+    while True:
+        embedHere = 1 + np.floor(np.random.rand() * sLen).astype(int)
+        if np.sum(np.sum(currentSet[0:3,3*embedHere-2:3*embedHere])) != 0 and np.sum(np.sum(currentSet[0:3, 3 * embedHere - 2:3 * embedHere])) != 9:
+            break
+        tol += 1
+        if tol == 100:
+            return 1
     pass
 
 def countBWBlocks(I):
@@ -323,12 +337,28 @@ def htstego_patbin(NSHARES, imparam, payloadFile):
         
     # TODO: embed
     loopCount = 1
-    for i in range(0,3*blockSize*3*M*N,3*blockSize):
+    for i in range(0,3*blockSize,3*M*N):
         if messagePos <= len(messageBinary):
             currentBit = messageBinary[messagePos-1]
             currentSet = linearStegoOutput[0,0:3,i:i+(3*blockSize)]
             
-            embedHere = 0
+            embedHere = findEmbedPositionPat(currentSet) #TODO
+            if embedHere == -1:
+                continue
+            
+            patternHere = 1 #TODO
+            if currentBit == '0':
+                newPattern = patternHere - 1
+            elif currentBit == '1':
+                newPattern = patternHere + 1
+            currentSet[0:3,3*embedHere-2:3*embedHere] = (patMap<newPattern).astype(int)
+            
+            shareToEmbedInto = 1 #TODO
+            linearStegoOutput[shareToEmbedInto,0:3,i:i+(3*blockSize-1)] = currentSet
+            messagePos += 1
+            loopCount += 1
+        else:
+            break
     
     # delinearize
     for i in range(NSHARES):
