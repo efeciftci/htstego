@@ -15,7 +15,7 @@ if __name__ == '__main__':
     args_required.add_argument('--htmethod', type=str, required=True, help='halftoning method (pattern, errdiff)')
     args_required.add_argument('--colormode', type=str, required=True, help='halftoning type (binary, color)')
     args_required.add_argument('--cover', type=str, required=True, help='input image')
-    args_required.add_argument('--payload', type=int, required=True, help='input payload')
+    args_required.add_argument('--payload', type=str, required=True, help='input payload')
     args_required.add_argument('--nshares', type=int, required=True, help='number of output shares to generate')
     
     args_errdiff = parser.add_argument_group('Error Diffusion Options')
@@ -44,18 +44,18 @@ if __name__ == '__main__':
         
     if args.htmethod == 'errdiff' and args.colormode=='binary':
         if args.errdiffmethod:
-            m, [avg_snr, avg_psnr, avg_ssim] = 'erdbin', htstego_errdiffbin(NSHARES=args.nshares, imparam=args.cover, txtparam=args.payload, errdiffmethod=args.errdiffmethod)
+            m, [avg_snr, avg_psnr, avg_ssim] = 'erdbin', htstego_errdiffbin(NSHARES=args.nshares, imparam=args.cover, payloadFile=args.payload, errdiffmethod=args.errdiffmethod)
         else:
             parser.error('--errdiffmethod is required when --htmethod is errdiff')
     elif args.htmethod=='errdiff' and args.colormode=='color':
         if args.errdiffmethod:
-            m, [avg_snr, avg_psnr, avg_ssim] = 'erdcol', htstego_errdiffcol(NSHARES=args.nshares, imparam=args.cover, txtparam=args.payload, errdiffmethod=args.errdiffmethod)
+            m, [avg_snr, avg_psnr, avg_ssim] = 'erdcol', htstego_errdiffcol(NSHARES=args.nshares, imparam=args.cover, payloadFile=args.payload, errdiffmethod=args.errdiffmethod)
         else:
             parser.error('--errdiffmethod is required when --htmethod is errdiff')
     elif args.htmethod=='pattern' and args.colormode=='binary':
-        m, [avg_snr, avg_psnr, avg_ssim] = 'patbin', htstego_patbin(NSHARES=args.nshares, imparam=args.cover, txtparam=args.payload)
+        m, [avg_snr, avg_psnr, avg_ssim] = 'patbin', htstego_patbin(NSHARES=args.nshares, imparam=args.cover, payloadFile=args.payload)
     elif args.htmethod=='pattern' and args.colormode=='color':
-        m, [avg_snr, avg_psnr, avg_ssim] = 'patcol', htstego_patcol(NSHARES=args.nshares, imparam=args.cover, txtparam=args.payload)
+        m, [avg_snr, avg_psnr, avg_ssim] = 'patcol', htstego_patcol(NSHARES=args.nshares, imparam=args.cover, payloadFile=args.payload)
     else:
         print('Incorrect method selection!')
         sys.exit(1)

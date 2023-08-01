@@ -1,6 +1,8 @@
 import numpy as np
 from skimage import io, metrics
 import settings
+import os.path
+import re
 
 __version__ = '0.5'
 
@@ -121,20 +123,22 @@ def convertHalftoneToMatrix(input_matrix, sWidth, sHeight):
             outputMatrix[3 * i:3 * (i + 1), 3 * j:3 * (j + 1)] = input_matrix[0:3, 3 * ((i * sWidth) + j):3 * ((i * sWidth) + j + 1)]
     return outputMatrix
 
-def htstego_errdiffbin(NSHARES, imparam, txtparam, errdiffmethod):
+def htstego_errdiffbin(NSHARES, imparam, payloadFile, errdiffmethod):
     errdifffun = globals().get(errdiffmethod)
-    imfile = f'{imparam}_256gray'
-    impath = f'cover_imgs/{imfile}.png'
-    I = io.imread(impath, as_gray=True) / 255.0
+    
+    imfile = os.path.splitext(imparam)[0]
+    I = io.imread(f'cover_imgs/{imparam}', as_gray=True)
+    if I.dtype=='uint8':
+        I = I / 255.0
     M, N = I.shape[:2]
 
-    txtfile = f'payloads/payload{txtparam}.txt'
-    messageAscii = open(txtfile).read()
+    payloadSize = re.search(r'\d+', payloadFile).group()
+    messageAscii = open(f'payloads/{payloadFile}').read()
     messageBinary = ''.join(format(ord(c), '08b') for c in messageAscii)
 
     blockSize = M*N // len(messageBinary)
     if blockSize == 0:
-        print(f'[{NSHARES:2d} {imparam:9s} {txtparam:4d}] message too long!')
+        print(f'[{NSHARES:2d} {imparam:9s} {payloadFile}] message too long!')
         return
 
     normalOutput = errdifffun(I)
@@ -178,7 +182,7 @@ def htstego_errdiffbin(NSHARES, imparam, txtparam, errdiffmethod):
         stegoOutputs[:, :, i] = linearStegoImages[i, :].reshape(M, N)
         stegoImage = (stegoOutputs[:, :, i] * 255).astype(np.uint8)
         if settings.nofileout == False:
-            stegoOutputPaths.append(f'output/{imfile}_hterrdiffbin_stego_msg{txtparam}_{i+1}of{NSHARES}_{errdiffmethod}.png')
+            stegoOutputPaths.append(f'output/{imfile}_hterrdiffbin_stego_msg{payloadSize}_{i+1}of{NSHARES}_{errdiffmethod}.png')
             io.imsave(stegoOutputPaths[i], stegoImage)
 
         results[i, 0] = snr(normalOutput, stegoImage)
@@ -190,15 +194,15 @@ def htstego_errdiffbin(NSHARES, imparam, txtparam, errdiffmethod):
     avg_ssim = np.mean(results[:, 2])
     return avg_snr, avg_psnr, avg_ssim
 
-def htstego_errdiffcol(NSHARES, imparam, txtparam, errdiffmethod):
+def htstego_errdiffcol(NSHARES, imparam, payloadFile, errdiffmethod):
     errdifffun = globals().get(errdiffmethod)
-    imfile = f'{imparam}_256rgb'
-    impath = f'cover_imgs/{imfile}.png'
-    I = io.imread(impath) / 255.0
+    
+    imfile = os.path.splitext(imparam)[0]
+    I = io.imread(f'cover_imgs/{imfile}.png') / 255.0
     M, N = I.shape[:2]
 
-    txtfile = f'payloads/payload{txtparam}.txt'
-    messageAscii = open(txtfile).read()
+    payloadSize = re.search(r'\d+', payloadFile).group()
+    messageAscii = open(f'payloads/{payloadFile}').read()
     messageBinary = ''.join(format(ord(c), '08b') for c in messageAscii)
 
     blockSize = M*N // len(messageBinary)
@@ -262,7 +266,7 @@ def htstego_errdiffcol(NSHARES, imparam, txtparam, errdiffmethod):
             stegoOutputs[i, :, :, j] = linearStegoImages[i, :, j].reshape(M, N)
         stegoImage = (stegoOutputs[i,:,:, :] * 255).astype(np.uint8)
         if settings.nofileout == False:
-            stegoOutputPaths.append(f'output/{imfile}_hterrdiffcol_stego_msg{txtparam}_{i+1}of{NSHARES}_{errdiffmethod}.png')
+            stegoOutputPaths.append(f'output/{imfile}_hterrdiffcol_stego_msg{payloadSize}_{i+1}of{NSHARES}_{errdiffmethod}.png')
             io.imsave(stegoOutputPaths[i], stegoImage)
 
         results[i, 0] = snr(normalOutput, stegoImage)
@@ -274,20 +278,21 @@ def htstego_errdiffcol(NSHARES, imparam, txtparam, errdiffmethod):
     avg_ssim = np.mean(results[:, 2])
     return avg_snr, avg_psnr, avg_ssim
 
-def htstego_patbin(NSHARES, imparam, txtparam):
+def htstego_patbin(NSHARES, imparam, payloadFile):
     print('work in progress')
-    imfile = f'{imparam}_256gray'
-    impath = f'cover_imgs/{imfile}.png'
-    I = io.imread(impath, as_gray=True) // 26
+    
+    imfile = os.path.splitext(imparam)[0]
+    I = (io.imread(f'cover_imgs/{imfile}.png', as_gray=True) * 255) // 26
+    print(I[0:5,0:5])
     M, N = I.shape[:2]
+
+    payloadSize = re.search(r'\d+', payloadFile).group()
+    messageAscii = open(f'payloads/{payloadFile}').read()
+    messageBinary = ''.join(format(ord(c), '08b') for c in messageAscii)
+    messagePos = 1
     
     normalOutput = np.zeros((M*3, N*3))
     stegoOutputs = np.zeros((NSHARES, M*3, N*3))
-
-    txtfile = f'payloads/payload{txtparam}.txt'
-    messageAscii = open(txtfile).read()
-    messageBinary = ''.join(format(ord(c), '08b') for c in messageAscii)
-    messagePos = 1
     
     nrOfBlocks = M*N
     bwBlocks = countBWBlocks(I)
@@ -295,7 +300,7 @@ def htstego_patbin(NSHARES, imparam, txtparam):
     blockSize = nrOfUsableBlocks // len(messageBinary)
     if blockSize == 0:
         print(f'[{NSHARES:2d} {imparam:9s} {txtparam:4d}] message too long!')
-        return
+        return [0, 0, 0]
     
     # print('nrOfBlocks:',nrOfBlocks,'bwBlocks:',bwBlocks,'nrOfUsableBlocks:',nrOfUsableBlocks,'blockSize:',blockSize)
     
@@ -337,7 +342,7 @@ def htstego_patbin(NSHARES, imparam, txtparam):
         # print('stegoOutputs[i]:',stegoOutputs[i])
         stegoImage = (stegoOutputs[i]*255).astype(np.uint8)
         # print('stegoImage:',stegoImage)
-        stegoOutputPaths.append(f'output/{imfile}_htpatbin_stego_msg{txtparam}_{i+1}of{NSHARES}.png')
+        stegoOutputPaths.append(f'output/{imfile}_htpatbin_stego_msg{payloadSize}_{i+1}of{NSHARES}.png')
         io.imsave(stegoOutputPaths[i], stegoImage)
     
         results[i, 0] = snr(normalOutput, stegoImage)
