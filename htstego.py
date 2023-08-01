@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 import argparse, sys
 from libhtstego import htstego_errdiffbin, htstego_errdiffcol, htstego_patbin, htstego_patcol
+import settings
 
 __version__ = '0.5'
+
+settings.init()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=f'Halftone Steganography Utility Version {__version__}')
@@ -28,26 +31,37 @@ if __name__ == '__main__':
         sys.exit(0)
 
     args = parser.parse_args()
+    if args.no_output_files:
+        settings.nofileout = args.no_output_files
+    if args.output_format:
+        settings.outputformat = args.output_format
+    if args.silent:
+        settings.nostdout = args.silent
+        
+    settings.nofileout = args.no_output_files if args.no_output_files else False
+    settings.nostdout = args.silent if args.silent else False
+    settings.outputformat = args.output_format if args.output_format else 'default'
+        
     if args.htmethod == 'errdiff' and args.colormode=='binary':
         if args.errdiffmethod:
-            m, [avg_snr, avg_psnr, avg_ssim] = 'erdbin', htstego_errdiffbin(NSHARES=args.nshares, imparam=args.cover, txtparam=args.payload, errdiffmethod=args.errdiffmethod, nofileout=args.no_output_files)
+            m, [avg_snr, avg_psnr, avg_ssim] = 'erdbin', htstego_errdiffbin(NSHARES=args.nshares, imparam=args.cover, txtparam=args.payload, errdiffmethod=args.errdiffmethod)
         else:
             parser.error('--errdiffmethod is required when --htmethod is errdiff')
     elif args.htmethod=='errdiff' and args.colormode=='color':
         if args.errdiffmethod:
-            m, [avg_snr, avg_psnr, avg_ssim] = 'erdcol', htstego_errdiffcol(NSHARES=args.nshares, imparam=args.cover, txtparam=args.payload, errdiffmethod=args.errdiffmethod, nofileout=args.no_output_files)
+            m, [avg_snr, avg_psnr, avg_ssim] = 'erdcol', htstego_errdiffcol(NSHARES=args.nshares, imparam=args.cover, txtparam=args.payload, errdiffmethod=args.errdiffmethod)
         else:
             parser.error('--errdiffmethod is required when --htmethod is errdiff')
     elif args.htmethod=='pattern' and args.colormode=='binary':
-        m, [avg_snr, avg_psnr, avg_ssim] = 'patbin', htstego_patbin(NSHARES=args.nshares, imparam=args.cover, txtparam=args.payload, nofileout=args.no_output_files)
+        m, [avg_snr, avg_psnr, avg_ssim] = 'patbin', htstego_patbin(NSHARES=args.nshares, imparam=args.cover, txtparam=args.payload)
     elif args.htmethod=='pattern' and args.colormode=='color':
-        m, [avg_snr, avg_psnr, avg_ssim] = 'patcol', htstego_patcol(NSHARES=args.nshares, imparam=args.cover, txtparam=args.payload, nofileout=args.no_output_files)
+        m, [avg_snr, avg_psnr, avg_ssim] = 'patcol', htstego_patcol(NSHARES=args.nshares, imparam=args.cover, txtparam=args.payload)
     else:
         print('Incorrect method selection!')
         sys.exit(1)
     
-    if args.silent == False:
-        if args.output_format == 'json':
+    if settings.nostdout == False:
+        if settings.outputformat == 'json':
             import json
             print(
                 json.dumps({
@@ -61,4 +75,3 @@ if __name__ == '__main__':
                 }))
         else:
             print(f'[{m}] [{args.nshares} {args.cover} {args.payload}] [avg_snr: {avg_snr:.4f}] [avg_psnr: {avg_psnr:.4f}] [avg_ssim: {avg_ssim:.4f}]')
-            

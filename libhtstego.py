@@ -1,8 +1,14 @@
 import numpy as np
 from skimage import io, metrics
+import settings
 
 __version__ = '0.5'
 
+
+def snr(o, n):
+    ps = np.mean(o**2)
+    pn = np.mean((o - n)**2)
+    return 10 * np.log10(ps / pn)
 
 def floyd(I):
     height, width = I.shape
@@ -24,7 +30,6 @@ def floyd(I):
                     I[y + 1, x + 1] += err * 1 / 16
     return I
 
-
 def fan(I):
     height, width = I.shape
     for y in range(height):
@@ -43,7 +48,6 @@ def fan(I):
                     I[y + 1, x - 1] = I[y + 1, x - 1] + err * 3 / 16
                 I[y + 1, x] = I[y + 1, x] + err * 5 / 16
     return I
-
 
 def jajuni(I):
     height, width = I.shape
@@ -83,12 +87,9 @@ def jajuni(I):
 
     return I
 
-
 def findEmbedPositionErrDiff(currentSet, stegoPixel):
     currentSet = np.ravel(currentSet)
-    if (stegoPixel == 0
-            and np.all(currentSet == 0)) or (stegoPixel == 1
-                                             and np.all(currentSet == 1)):
+    if (stegoPixel == 0 and np.all(currentSet == 0)) or (stegoPixel == 1 and np.all(currentSet == 1)):
         return -1
 
     sLen = len(currentSet)
@@ -99,14 +100,28 @@ def findEmbedPositionErrDiff(currentSet, stegoPixel):
 
     return embedHere
 
+def findEmbedPositionPat(currentSet):
+    pass
 
-def snr(o, n):
-    ps = np.mean(o**2)
-    pn = np.mean((o - n)**2)
-    return 10 * np.log10(ps / pn)
+def countBWBlocks(I):
+    cnt = np.count_nonzero(I == 0) + np.count_nonzero(I == 9)
+    return cnt
 
+def convertHalftoneToArray(input_matrix, sWidth, sHeight):
+    outputMatrix = np.zeros((3, sWidth * sHeight * 3), dtype=input_matrix.dtype)
+    for i in range(sHeight):
+        for j in range(sWidth):
+            outputMatrix[:, 3 * ((i * sWidth) + j):3 * ((i * sWidth) + j + 1)] = input_matrix[3 * i:3 * (i + 1), 3 * j:3 * (j + 1)]
+    return outputMatrix
 
-def htstego_errdiffbin(NSHARES, imparam, txtparam, errdiffmethod, nofileout):
+def convertHalftoneToMatrix(input_matrix, sWidth, sHeight):
+    outputMatrix = np.zeros((sHeight * 3, sWidth * 3), dtype=input_matrix.dtype)
+    for i in range(sHeight):
+        for j in range(sWidth):
+            outputMatrix[3 * i:3 * (i + 1), 3 * j:3 * (j + 1)] = input_matrix[0:3, 3 * ((i * sWidth) + j):3 * ((i * sWidth) + j + 1)]
+    return outputMatrix
+
+def htstego_errdiffbin(NSHARES, imparam, txtparam, errdiffmethod):
     errdifffun = globals().get(errdiffmethod)
     imfile = f'{imparam}_256gray'
     impath = f'cover_imgs/{imfile}.png'
@@ -154,7 +169,7 @@ def htstego_errdiffbin(NSHARES, imparam, txtparam, errdiffmethod, nofileout):
 
     normalOutput = (normalOutput * 255).astype(np.uint8)
 
-    if nofileout == False:
+    if settings.nofileout == False:
         normalOutputPath = f'output/{imfile}_hterrdiffbin_regular_{errdiffmethod}.png'
         io.imsave(normalOutputPath, normalOutput)
         stegoOutputPaths = []
@@ -162,7 +177,7 @@ def htstego_errdiffbin(NSHARES, imparam, txtparam, errdiffmethod, nofileout):
     for i in range(NSHARES):
         stegoOutputs[:, :, i] = linearStegoImages[i, :].reshape(M, N)
         stegoImage = (stegoOutputs[:, :, i] * 255).astype(np.uint8)
-        if nofileout == False:
+        if settings.nofileout == False:
             stegoOutputPaths.append(f'output/{imfile}_hterrdiffbin_stego_msg{txtparam}_{i+1}of{NSHARES}_{errdiffmethod}.png')
             io.imsave(stegoOutputPaths[i], stegoImage)
 
@@ -175,7 +190,7 @@ def htstego_errdiffbin(NSHARES, imparam, txtparam, errdiffmethod, nofileout):
     avg_ssim = np.mean(results[:, 2])
     return avg_snr, avg_psnr, avg_ssim
 
-def htstego_errdiffcol(NSHARES, imparam, txtparam, errdiffmethod, nofileout):
+def htstego_errdiffcol(NSHARES, imparam, txtparam, errdiffmethod):
     errdifffun = globals().get(errdiffmethod)
     imfile = f'{imparam}_256rgb'
     impath = f'cover_imgs/{imfile}.png'
@@ -237,7 +252,7 @@ def htstego_errdiffcol(NSHARES, imparam, txtparam, errdiffmethod, nofileout):
 
     normalOutput = (normalOutput * 255).astype(np.uint8)
 
-    if nofileout == False:
+    if settings.nofileout == False:
         normalOutputPath = f'output/{imfile}_hterrdiffcol_regular_{errdiffmethod}.png'
         io.imsave(normalOutputPath, normalOutput)
         stegoOutputPaths = []
@@ -246,7 +261,7 @@ def htstego_errdiffcol(NSHARES, imparam, txtparam, errdiffmethod, nofileout):
         for j in range(3):
             stegoOutputs[i, :, :, j] = linearStegoImages[i, :, j].reshape(M, N)
         stegoImage = (stegoOutputs[i,:,:, :] * 255).astype(np.uint8)
-        if nofileout == False:
+        if settings.nofileout == False:
             stegoOutputPaths.append(f'output/{imfile}_hterrdiffcol_stego_msg{txtparam}_{i+1}of{NSHARES}_{errdiffmethod}.png')
             io.imsave(stegoOutputPaths[i], stegoImage)
 
@@ -259,7 +274,7 @@ def htstego_errdiffcol(NSHARES, imparam, txtparam, errdiffmethod, nofileout):
     avg_ssim = np.mean(results[:, 2])
     return avg_snr, avg_psnr, avg_ssim
 
-def htstego_patbin(NSHARES, imparam, txtparam, nofileout):
+def htstego_patbin(NSHARES, imparam, txtparam):
     print('work in progress')
     imfile = f'{imparam}_256gray'
     impath = f'cover_imgs/{imfile}.png'
@@ -272,6 +287,7 @@ def htstego_patbin(NSHARES, imparam, txtparam, nofileout):
     txtfile = f'payloads/payload{txtparam}.txt'
     messageAscii = open(txtfile).read()
     messageBinary = ''.join(format(ord(c), '08b') for c in messageAscii)
+    messagePos = 1
     
     nrOfBlocks = M*N
     bwBlocks = countBWBlocks(I)
@@ -294,28 +310,46 @@ def htstego_patbin(NSHARES, imparam, txtparam, nofileout):
         stegoOutputs[i] = normalOutput
     
     # linearize
-    # embed
+    linearStegoOutput = np.zeros((NSHARES,3,M*N*3))
+    linearStegoOutput[0] = convertHalftoneToArray(stegoOutputs[0], M, N)
+    print('linearStegoOutput[0]:',linearStegoOutput[0])
+    for i in range(1,NSHARES):
+        linearStegoOutput[i] = linearStegoOutput[0]
+        
+    # TODO: embed
+    loopCount = 1
+    for i in range(0,3*blockSize*3*M*N,3*blockSize):
+        if messagePos <= len(messageBinary):
+            currentBit = messageBinary[messagePos-1]
+            currentSet = linearStegoOutput[0,0:3,i:i+(3*blockSize)]
+            
+            embedHere = 0
+    
     # delinearize
+    for i in range(NSHARES):
+        stegoOutputs[i] = convertHalftoneToMatrix(linearStegoOutput[i], N, M)
     
     normalOutput = (normalOutput * 255).astype(np.uint8)
     normalOutputPath = f'output/{imfile}_htpatbin_regular.png'
     io.imsave(normalOutputPath, normalOutput)
     stegoOutputPaths = []
     for i in range(NSHARES):
+        # print('stegoOutputs[i]:',stegoOutputs[i])
         stegoImage = (stegoOutputs[i]*255).astype(np.uint8)
+        # print('stegoImage:',stegoImage)
         stegoOutputPaths.append(f'output/{imfile}_htpatbin_stego_msg{txtparam}_{i+1}of{NSHARES}.png')
         io.imsave(stegoOutputPaths[i], stegoImage)
+    
+        results[i, 0] = snr(normalOutput, stegoImage)
+        results[i, 1] = metrics.peak_signal_noise_ratio(stegoImage, normalOutput)
+        results[i, 2] = metrics.structural_similarity(stegoImage, normalOutput)
     
     avg_snr = np.mean(results[:, 0])
     avg_psnr = np.mean(results[:, 1])
     avg_ssim = np.mean(results[:, 2])
     return avg_snr, avg_psnr, avg_ssim
 
-def countBWBlocks(I):
-    cnt = np.count_nonzero(I == 0) + np.count_nonzero(I == 9)
-    return cnt
-
-def htstego_patcol(NSHARES, imparam, txtparam, nofileout):
+def htstego_patcol(NSHARES, imparam, txtparam):
     print('to be implemented')
     
     results = np.zeros((NSHARES, 3))
@@ -324,4 +358,3 @@ def htstego_patcol(NSHARES, imparam, txtparam, nofileout):
     avg_psnr = np.mean(results[:, 1])
     avg_ssim = np.mean(results[:, 2])
     return avg_snr, avg_psnr, avg_ssim
-
