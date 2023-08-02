@@ -3,6 +3,7 @@ from skimage import io, metrics
 import settings
 import os.path
 import re
+from matplotlib import pyplot as plt
 
 __version__ = '0.5'
 
@@ -116,25 +117,27 @@ def findEmbedPositionPat(currentSet):
             break
         tol += 1
         if tol == 100:
-            return 1
-    pass
+            embedHere = 1
+            break
+    return embedHere
 
 def countBWBlocks(I):
     cnt = np.count_nonzero(I == 0) + np.count_nonzero(I == 9)
     return cnt
 
-def convertHalftoneToArray(input_matrix, sWidth, sHeight):
-    outputMatrix = np.zeros((3, sWidth * sHeight * 3), dtype=input_matrix.dtype)
+def convertHalftoneToArray(inputMatrix, sHeight, sWidth):
+    outputMatrix = np.zeros((3, sWidth * sHeight * 3), dtype=inputMatrix.dtype)
+    
     for i in range(sHeight):
         for j in range(sWidth):
-            outputMatrix[:, 3 * ((i * sWidth) + j):3 * ((i * sWidth) + j + 1)] = input_matrix[3 * i:3 * (i + 1), 3 * j:3 * (j + 1)]
+            outputMatrix[:, 3 * ((i * sWidth) + j):3 * ((i * sWidth) + j + 1)] = inputMatrix[3 * i:3 * (i + 1), 3 * j:3 * (j + 1)]
     return outputMatrix
 
-def convertHalftoneToMatrix(input_matrix, sWidth, sHeight):
-    outputMatrix = np.zeros((sHeight * 3, sWidth * 3), dtype=input_matrix.dtype)
+def convertHalftoneToMatrix(inputMatrix, sWidth, sHeight):
+    outputMatrix = np.zeros((sHeight * 3, sWidth * 3), dtype=inputMatrix.dtype)
     for i in range(sHeight):
         for j in range(sWidth):
-            outputMatrix[3 * i:3 * (i + 1), 3 * j:3 * (j + 1)] = input_matrix[0:3, 3 * ((i * sWidth) + j):3 * ((i * sWidth) + j + 1)]
+            outputMatrix[3 * i:3 * (i + 1), 3 * j:3 * (j + 1)] = inputMatrix[0:3, 3 * ((i * sWidth) + j):3 * ((i * sWidth) + j + 1)]
     return outputMatrix
 
 def htstego_errdiffbin(NSHARES, imparam, payloadFile, errdiffmethod):
@@ -297,7 +300,6 @@ def htstego_patbin(NSHARES, imparam, payloadFile):
     
     imfile = os.path.splitext(imparam)[0]
     I = (io.imread(f'cover_imgs/{imfile}.png', as_gray=True) * 255) // 26
-    print(I[0:5,0:5])
     M, N = I.shape[:2]
 
     payloadSize = re.search(r'\d+', payloadFile).group()
@@ -313,11 +315,9 @@ def htstego_patbin(NSHARES, imparam, payloadFile):
     nrOfUsableBlocks = nrOfBlocks - bwBlocks
     blockSize = nrOfUsableBlocks // len(messageBinary)
     if blockSize == 0:
-        print(f'[{NSHARES:2d} {imparam:9s} {txtparam:4d}] message too long!')
+        print(f'[{NSHARES:2d} {imparam:9s} {payloadSize:4s}] message too long!')
         return [0, 0, 0]
-    
-    # print('nrOfBlocks:',nrOfBlocks,'bwBlocks:',bwBlocks,'nrOfUsableBlocks:',nrOfUsableBlocks,'blockSize:',blockSize)
-    
+        
     results = np.zeros((NSHARES, 3))
     patMap = np.array([[2, 0, 4], [7, 8, 5], [3, 6, 1]])
     
@@ -327,34 +327,35 @@ def htstego_patbin(NSHARES, imparam, payloadFile):
                 p = I[j,k]
                 normalOutput[j*3:(j+1)*3,k*3:(k+1)*3] = (patMap<p).astype(int)
         stegoOutputs[i] = normalOutput
+        
+    
     
     # linearize
     linearStegoOutput = np.zeros((NSHARES,3,M*N*3))
     linearStegoOutput[0] = convertHalftoneToArray(stegoOutputs[0], M, N)
-    print('linearStegoOutput[0]:',linearStegoOutput[0])
     for i in range(1,NSHARES):
         linearStegoOutput[i] = linearStegoOutput[0]
         
     # TODO: embed
     loopCount = 1
-    for i in range(0,3*blockSize,3*M*N):
+    for i in range(0,3*M*N,3*blockSize):
         if messagePos <= len(messageBinary):
             currentBit = messageBinary[messagePos-1]
-            currentSet = linearStegoOutput[0,0:3,i:i+(3*blockSize)]
+            currentSet = linearStegoOutput[0,0:3,i:i+(3*blockSize)].copy()
             
-            embedHere = findEmbedPositionPat(currentSet) #TODO
+            embedHere = findEmbedPositionPat(currentSet)
             if embedHere == -1:
                 continue
             
-            patternHere = 1 #TODO
+            patternHere = 1 + np.sum(np.sum(currentSet[:, 3 * embedHere - 2:3 * embedHere])).astype(np.uint8)
             if currentBit == '0':
                 newPattern = patternHere - 1
             elif currentBit == '1':
                 newPattern = patternHere + 1
-            currentSet[0:3,3*embedHere-2:3*embedHere] = (patMap<newPattern).astype(int)
+            currentSet[0:3,3*(embedHere-1):3*embedHere] = (patMap<=newPattern).astype(int)
             
-            shareToEmbedInto = 1 #TODO
-            linearStegoOutput[shareToEmbedInto,0:3,i:i+(3*blockSize-1)] = currentSet
+            shareToEmbedInto = np.random.randint(NSHARES)
+            linearStegoOutput[shareToEmbedInto,0:3,i:i+(3*blockSize)] = currentSet
             messagePos += 1
             loopCount += 1
         else:
@@ -369,9 +370,7 @@ def htstego_patbin(NSHARES, imparam, payloadFile):
     io.imsave(normalOutputPath, normalOutput)
     stegoOutputPaths = []
     for i in range(NSHARES):
-        # print('stegoOutputs[i]:',stegoOutputs[i])
         stegoImage = (stegoOutputs[i]*255).astype(np.uint8)
-        # print('stegoImage:',stegoImage)
         stegoOutputPaths.append(f'output/{imfile}_htpatbin_stego_msg{payloadSize}_{i+1}of{NSHARES}.png')
         io.imsave(stegoOutputPaths[i], stegoImage)
     
