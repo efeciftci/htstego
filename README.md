@@ -60,7 +60,6 @@ where the "regular" is the file with no payloads and the others are carrier imag
 ## Future
 
 - XML output
-- Color error diffusion method
 - Binary pattern-based method
 - Color pattern-based method
 - Ordered dithering method
