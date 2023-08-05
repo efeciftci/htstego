@@ -2,8 +2,7 @@
 import argparse, sys, settings
 from libhtstego import htstego_errdiffbin, htstego_errdiffcol, htstego_patbin, htstego_patcol
 
-__version__ = '0.5'
-
+__version__ = '0.6'
 settings.init()
 
 if __name__ == '__main__':
@@ -60,13 +59,15 @@ if __name__ == '__main__':
     if settings.nostdout == False:
         if settings.outputformat == 'json':
             import json
-            print(json.dumps({
+            print(
+                json.dumps({
                     'method': m,
                     'nshares': args.nshares,
-                    'imparam': args.cover,
-                    'txtparam': args.payload,
+                    'coverFile': args.cover,
+                    'payloadFile': args.payload,
                     'avg_snr': round(avg_snr, 4),
                     'avg_psnr': round(avg_psnr, 4),
-                    'avg_ssim': round(avg_ssim, 4)}))
+                    'avg_ssim': round(avg_ssim, 4)
+                }))
         else:
             print(f'[{m}] [{args.nshares} {args.cover} {args.payload}] [avg_snr: {avg_snr:.4f}] [avg_psnr: {avg_psnr:.4f}] [avg_ssim: {avg_ssim:.4f}]')
