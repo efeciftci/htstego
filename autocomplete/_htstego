@@ -1,0 +1,19 @@
+#autocomplete file for zsh
+compdef _htstego.py htstego.py
+
+function _htstego.py() {
+    _arguments \
+        '(-h --help)'{-h,--help}'[show help message]' \
+        '(-v --version)'{-v,--version}'[show program version]' \
+        '--htmethod[halftoning method]::when:(pattern errdiff)' \
+        '--colormode[halftoning type]::when:(binary color)' \
+        '--cover[input image]:file:_files' \
+        '--payload[input payload]:file:_files' \
+        '--nshares[number of output shares to generate]:nshares' \
+        '--errdiffmethod[error diffusion method (required when htmethod is errdiff)]::when:(fan floyd jajuni)' \
+        '--output-format[output format]::when:(default json)' \
+        '--no-output-files[do not produce output images]' \
+        '--silent[do not display output on screen]'
+        
+        return 0
+}
