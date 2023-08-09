@@ -157,7 +157,7 @@ def htstego_errdiffbin(NSHARES, coverFile, payloadFile, errdiffmethod):
         I = I / 255.0
     M, N = I.shape[:2]
 
-    payloadSize = re.search(r'\d+', payloadFile).group()
+    payloadSize = os.path.getsize(f'payloads/{payloadFile}')
     messageAscii = open(f'payloads/{payloadFile}').read()
     messageBinary = ''.join(format(ord(c), '08b') for c in messageAscii)
 
@@ -227,7 +227,7 @@ def htstego_errdiffcol(NSHARES, coverFile, payloadFile, errdiffmethod):
     I = io.imread(f'cover_imgs/{imfile}.png') / 255.0
     M, N = I.shape[:2]
 
-    payloadSize = re.search(r'\d+', payloadFile).group()
+    payloadSize = os.path.getsize(f'payloads/{payloadFile}')
     messageAscii = open(f'payloads/{payloadFile}').read()
     messageBinary = ''.join(format(ord(c), '08b') for c in messageAscii)
 
@@ -310,7 +310,7 @@ def htstego_patbin(NSHARES, coverFile, payloadFile):
     I = io.imread(f'cover_imgs/{imfile}.png') // 26
     M, N = I.shape[:2]
 
-    payloadSize = re.search(r'\d+', payloadFile).group()
+    payloadSize = os.path.getsize(f'payloads/{payloadFile}')
     messageAscii = open(f'payloads/{payloadFile}').read()
     messageBinary = ''.join(format(ord(c), '08b') for c in messageAscii)
     messagePos = 1
@@ -392,8 +392,8 @@ def htstego_patcol(NSHARES, coverFile, payloadFile):
     imfile = os.path.splitext(coverFile)[0]
     I = io.imread(f'cover_imgs/{imfile}.png') // 26
     M, N = I.shape[:2]
-
-    payloadSize = re.search(r'\d+', payloadFile).group()
+    
+    payloadSize = os.path.getsize(f'payloads/{payloadFile}')
     messageAscii = open(f'payloads/{payloadFile}').read()
     messageBinary = ''.join(format(ord(c), '08b') for c in messageAscii)
     messagePos = 1
@@ -408,7 +408,6 @@ def htstego_patcol(NSHARES, coverFile, payloadFile):
     if blockSize == 0:
         print(f'[{NSHARES:2d} {coverFile:9s} {payloadSize:4s}] message too long!')
         return [0, 0, 0]
-    print(f'bwBlocks: {bwBlocks}')
     results = np.zeros((NSHARES, 3))
     patMap = np.array([[2, 0, 4], [7, 8, 5], [3, 6, 1]])
 
