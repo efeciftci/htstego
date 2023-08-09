@@ -45,13 +45,13 @@ if __name__ == '__main__':
         sys.exit(1)
 
     if args.htmethod == 'errdiff' and args.colormode == 'binary':
-        m, [avg_snr, avg_psnr, avg_ssim] = 'erdbin', htstego_errdiffbin(NSHARES=args.nshares, imparam=args.cover, payloadFile=args.payload, errdiffmethod=args.errdiffmethod)
+        m, [avg_snr, avg_psnr, avg_ssim] = 'erdbin', htstego_errdiffbin(NSHARES=args.nshares, coverFile=args.cover, payloadFile=args.payload, errdiffmethod=args.errdiffmethod)
     elif args.htmethod == 'errdiff' and args.colormode == 'color':
-        m, [avg_snr, avg_psnr, avg_ssim] = 'erdcol', htstego_errdiffcol(NSHARES=args.nshares, imparam=args.cover, payloadFile=args.payload, errdiffmethod=args.errdiffmethod)
+        m, [avg_snr, avg_psnr, avg_ssim] = 'erdcol', htstego_errdiffcol(NSHARES=args.nshares, coverFile=args.cover, payloadFile=args.payload, errdiffmethod=args.errdiffmethod)
     elif args.htmethod == 'pattern' and args.colormode == 'binary':
-        m, [avg_snr, avg_psnr, avg_ssim] = 'patbin', htstego_patbin(NSHARES=args.nshares, imparam=args.cover, payloadFile=args.payload)
+        m, [avg_snr, avg_psnr, avg_ssim] = 'patbin', htstego_patbin(NSHARES=args.nshares, coverFile=args.cover, payloadFile=args.payload)
     elif args.htmethod == 'pattern' and args.colormode == 'color':
-        m, [avg_snr, avg_psnr, avg_ssim] = 'patcol', htstego_patcol(NSHARES=args.nshares, imparam=args.cover, payloadFile=args.payload)
+        m, [avg_snr, avg_psnr, avg_ssim] = 'patcol', htstego_patcol(NSHARES=args.nshares, coverFile=args.cover, payloadFile=args.payload)
     else:
         print('Incorrect method selection!')
         sys.exit(1)
