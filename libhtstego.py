@@ -128,7 +128,7 @@ def convertHalftoneToArray(inputMatrix, sHeight, sWidth):
     if len(inputMatrix.shape) == 2:
         outputMatrix = np.zeros((3, sWidth * sHeight * 3), dtype=inputMatrix.dtype)
     else:
-        outputMatrix = np.zeros((3, sWidth * sHeight * 3, 3), dtype=inputMatrix.dtype)
+        outputMatrix = np.zeros((3, sWidth * sHeight * 3, inputMatrix.shape[2]), dtype=inputMatrix.dtype)
 
     for i in range(sHeight):
         for j in range(sWidth):
@@ -140,7 +140,7 @@ def convertHalftoneToMatrix(inputMatrix, sWidth, sHeight):
     if len(inputMatrix.shape) == 2:
         outputMatrix = np.zeros((sHeight * 3, sWidth * 3), dtype=inputMatrix.dtype)
     else:
-        outputMatrix = np.zeros((sHeight * 3, sWidth * 3, 3), dtype=inputMatrix.dtype)
+        outputMatrix = np.zeros((sHeight * 3, sWidth * 3, inputMatrix.shape[2]), dtype=inputMatrix.dtype)
 
     for i in range(sHeight):
         for j in range(sWidth):
@@ -148,14 +148,16 @@ def convertHalftoneToMatrix(inputMatrix, sWidth, sHeight):
     return outputMatrix
 
 
-def htstego_errdiffbin(NSHARES, coverFile, payloadFile, errdiffmethod):
+def htstego_errdiff(NSHARES, coverFile, payloadFile, errdiffmethod, outputMode):
     errdifffun = globals().get(errdiffmethod)
 
     imfile = os.path.splitext(coverFile)[0]
-    I = io.imread(f'cover_imgs/{coverFile}', as_gray=True)
-    if I.dtype == 'uint8':
-        I = I / 255.0
-    M, N = I.shape[:2]
+    if outputMode == 'binary':
+        I = io.imread(f'cover_imgs/{imfile}.png', as_gray=True)
+        I = np.expand_dims(I, axis=-1)
+    else:
+        I = io.imread(f'cover_imgs/{imfile}.png') / 255.0
+    M, N, C = I.shape
 
     payloadSize = os.path.getsize(f'payloads/{payloadFile}')
     messageAscii = open(f'payloads/{payloadFile}').read()
@@ -166,10 +168,16 @@ def htstego_errdiffbin(NSHARES, coverFile, payloadFile, errdiffmethod):
         print(f'[{NSHARES:2d} {coverFile:9s} {payloadFile}] message too long!')
         return
 
-    normalOutput = errdifffun(I)
-    stegoOutputs = np.zeros((NSHARES, I.shape[0], I.shape[1]))
-    linearImage = normalOutput.reshape(1, -1)[0]
-    linearStegoImages = np.tile(linearImage, (NSHARES, 1))
+    normalOutput = np.zeros((M, N, C))
+    linearImage = np.zeros((M * N, C))
+    stegoOutputs = np.zeros((NSHARES, M, N, C))
+    linearStegoImages = np.zeros((NSHARES, M * N, C))
+    
+    for i in range(C):
+        normalOutput[:, :, i] = errdifffun(I[:, :, i])
+        linearImage[:, i] = normalOutput[:, :, i].reshape(1, -1)[0]
+        for j in range(NSHARES):
+            linearStegoImages[j, :, i] = linearImage[:, i]
 
     results = np.zeros((NSHARES, 3))
 
@@ -178,89 +186,7 @@ def htstego_errdiffbin(NSHARES, coverFile, payloadFile, errdiffmethod):
         if messagePos < len(messageBinary):
             stegoPixel = int(messageBinary[messagePos])
 
-            if i + blockSize - 1 > M * N:
-                print(i + blockSize - 1)
-                break
-
-            currentBlock = linearImage[i:i + blockSize]
-            stegoBlock = currentBlock.copy()
-
-            embedHere = findEmbedPositionErrDiff(currentBlock, stegoPixel)
-            if embedHere == -1:
-                continue
-
-            stegoBlock[embedHere] = stegoPixel
-            randomShare = np.random.randint(0, NSHARES)
-            linearStegoImages[randomShare, i:i + blockSize] = stegoBlock
-            messagePos += 1
-        else:
-            break
-
-    normalOutput = (normalOutput * 255).astype(np.uint8)
-
-    if settings.nofileout == False:
-        normalOutputPath = f'output/{imfile}_hterrdiffbin_regular_{errdiffmethod}.png'
-        io.imsave(normalOutputPath, normalOutput)
-        stegoOutputPaths = []
-
-    for i in range(NSHARES):
-        stegoOutputs[i] = linearStegoImages[i, :].reshape(M, N)
-        stegoImage = (stegoOutputs[i] * 255).astype(np.uint8)
-        if settings.nofileout == False:
-            stegoOutputPaths.append(f'output/{imfile}_hterrdiffbin_stego_msg{payloadSize}_{i+1}of{NSHARES}_{errdiffmethod}.png')
-            io.imsave(stegoOutputPaths[i], stegoImage)
-
-        results[i, 0] = snr(normalOutput, stegoImage)
-        results[i, 1] = metrics.peak_signal_noise_ratio(stegoImage, normalOutput)
-        results[i, 2] = metrics.structural_similarity(stegoImage, normalOutput)
-
-    avg_snr = np.mean(results[:, 0])
-    avg_psnr = np.mean(results[:, 1])
-    avg_ssim = np.mean(results[:, 2])
-    return avg_snr, avg_psnr, avg_ssim
-
-
-def htstego_errdiffcol(NSHARES, coverFile, payloadFile, errdiffmethod):
-    errdifffun = globals().get(errdiffmethod)
-
-    imfile = os.path.splitext(coverFile)[0]
-    I = io.imread(f'cover_imgs/{imfile}.png') / 255.0
-    M, N = I.shape[:2]
-
-    payloadSize = os.path.getsize(f'payloads/{payloadFile}')
-    messageAscii = open(f'payloads/{payloadFile}').read()
-    messageBinary = ''.join(format(ord(c), '08b') for c in messageAscii)
-
-    blockSize = M * N // len(messageBinary)
-    if blockSize == 0:
-        print(f'[{NSHARES:2d} {coverFile:9s} {payloadFile}] message too long!')
-        return
-
-    normalOutput = np.zeros((M, N, 3))
-    normalOutput[:, :, 0] = errdifffun(I[:, :, 0])
-    normalOutput[:, :, 1] = errdifffun(I[:, :, 1])
-    normalOutput[:, :, 2] = errdifffun(I[:, :, 2])
-
-    linearImage = np.zeros((M * N, 3))
-    linearImage[:, 0] = normalOutput[:, :, 0].reshape(1, -1)[0]
-    linearImage[:, 1] = normalOutput[:, :, 1].reshape(1, -1)[0]
-    linearImage[:, 2] = normalOutput[:, :, 2].reshape(1, -1)[0]
-
-    stegoOutputs = np.zeros((NSHARES, M, N, 3))
-    linearStegoImages = np.zeros((NSHARES, M * N, 3))
-    for i in range(NSHARES):
-        linearStegoImages[i, :, 0] = linearImage[:, 0]
-        linearStegoImages[i, :, 1] = linearImage[:, 1]
-        linearStegoImages[i, :, 2] = linearImage[:, 2]
-
-    results = np.zeros((NSHARES, 3))
-
-    messagePos = 0
-    for i in range(0, M * N, blockSize):
-        if messagePos < len(messageBinary):
-            stegoPixel = int(messageBinary[messagePos])
-
-            randomChannel = np.random.randint(3)
+            randomChannel = np.random.randint(C)
 
             if i + blockSize - 1 > M * N:
                 print('end: ', i + blockSize - 1)
@@ -281,23 +207,28 @@ def htstego_errdiffcol(NSHARES, coverFile, payloadFile, errdiffmethod):
             break
 
     normalOutput = (normalOutput * 255).astype(np.uint8)
+    if outputMode=='binary':
+        normalOutput = normalOutput[:,:,0]
 
     if settings.nofileout == False:
-        normalOutputPath = f'output/{imfile}_hterrdiffcol_regular_{errdiffmethod}.png'
+        normalOutputPath = f'output/{imfile}_hterrdiff{outputMode[:3]}_regular_{errdiffmethod}.png'
         io.imsave(normalOutputPath, normalOutput)
         stegoOutputPaths = []
 
     for i in range(NSHARES):
-        for j in range(3):
+        for j in range(C):
             stegoOutputs[i, :, :, j] = linearStegoImages[i, :, j].reshape(M, N)
         stegoImage = (stegoOutputs[i] * 255).astype(np.uint8)
+        if outputMode == 'binary':
+            stegoImage = stegoImage[:,:,0]
         if settings.nofileout == False:
-            stegoOutputPaths.append(f'output/{imfile}_hterrdiffcol_stego_msg{payloadSize}_{i+1}of{NSHARES}_{errdiffmethod}.png')
+            stegoOutputPaths.append(f'output/{imfile}_hterrdiff{outputMode[:3]}_stego_msg{payloadSize}_{i+1}of{NSHARES}_{errdiffmethod}.png')
             io.imsave(stegoOutputPaths[i], stegoImage)
 
+        cA = None if len(stegoImage.shape) == 2 else 2
         results[i, 0] = snr(normalOutput, stegoImage)
         results[i, 1] = metrics.peak_signal_noise_ratio(stegoImage, normalOutput)
-        results[i, 2] = metrics.structural_similarity(stegoImage, normalOutput, channel_axis=2)
+        results[i, 2] = metrics.structural_similarity(stegoImage, normalOutput, channel_axis=cA)
 
     avg_snr = np.mean(results[:, 0])
     avg_psnr = np.mean(results[:, 1])
@@ -305,102 +236,24 @@ def htstego_errdiffcol(NSHARES, coverFile, payloadFile, errdiffmethod):
     return avg_snr, avg_psnr, avg_ssim
 
 
-def htstego_patbin(NSHARES, coverFile, payloadFile):
+def htstego_pattern(NSHARES, coverFile, payloadFile, outputMode):
     imfile = os.path.splitext(coverFile)[0]
-    I = io.imread(f'cover_imgs/{imfile}.png') // 26
-    M, N = I.shape[:2]
-
-    payloadSize = os.path.getsize(f'payloads/{payloadFile}')
-    messageAscii = open(f'payloads/{payloadFile}').read()
-    messageBinary = ''.join(format(ord(c), '08b') for c in messageAscii)
-    messagePos = 1
-
-    normalOutput = np.zeros((M * 3, N * 3))
-    stegoOutputs = np.zeros((NSHARES, M * 3, N * 3))
-
-    nrOfBlocks = M * N
-    bwBlocks = countBWBlocks(I)
-    nrOfUsableBlocks = nrOfBlocks - bwBlocks
-    blockSize = nrOfUsableBlocks // len(messageBinary)
-    if blockSize == 0:
-        print(f'[{NSHARES:2d} {coverFile:9s} {payloadSize:4s}] message too long!')
-        return [0, 0, 0]
-
-    results = np.zeros((NSHARES, 3))
-    patMap = np.array([[2, 0, 4], [7, 8, 5], [3, 6, 1]])
-
-    for i in range(NSHARES):
-        for j in range(M):
-            for k in range(N):
-                p = I[j, k]
-                normalOutput[j * 3:(j + 1) * 3, k * 3:(k + 1) * 3] = (patMap < p).astype(int)
-        stegoOutputs[i] = normalOutput
-
-    linearStegoOutput = np.zeros((NSHARES, 3, M * N * 3))
-    linearStegoOutput[0] = convertHalftoneToArray(stegoOutputs[0], M, N)
-    for i in range(1, NSHARES):
-        linearStegoOutput[i] = linearStegoOutput[0]
-
-    for i in range(0, 3 * M * N, 3 * blockSize):
-        if messagePos <= len(messageBinary):
-            currentBit = messageBinary[messagePos - 1]
-            currentSet = linearStegoOutput[0, :, i:i + (3 * blockSize)].copy()
-
-            embedHere = findEmbedPositionPat(currentSet)
-            if embedHere == -1:
-                continue
-
-            patternHere = np.sum(np.sum(currentSet[:, 3 * embedHere:3 * embedHere + 3])).astype(np.uint8)
-            if currentBit == '0':
-                newPattern = patternHere - 1
-            elif currentBit == '1':
-                newPattern = patternHere + 1
-            currentSet[:, 3 * embedHere:3 * embedHere + 3] = (patMap < newPattern).astype(int)
-
-            shareToEmbedInto = np.random.randint(NSHARES)
-            linearStegoOutput[shareToEmbedInto, :, i:i + (3 * blockSize)] = currentSet.copy()
-            messagePos += 1
-        else:
-            break
-
-    for i in range(NSHARES):
-        stegoOutputs[i] = convertHalftoneToMatrix(linearStegoOutput[i], N, M)
-
-    normalOutput = (normalOutput * 255).astype(np.uint8)
-    if settings.nofileout == False:
-        normalOutputPath = f'output/{imfile}_htpatbin_regular.png'
-        io.imsave(normalOutputPath, normalOutput)
-        stegoOutputPaths = []
+    I = io.imread(f'cover_imgs/{imfile}.png')
+    if outputMode == 'binary':
+        I = (io.imread(f'cover_imgs/{imfile}.png', as_gray=True)*255).astype(np.uint8) // 26
+        I = np.expand_dims(I, axis=-1)
+    else:
+        I = io.imread(f'cover_imgs/{imfile}.png') //26
+    M, N, C = I.shape
         
-    for i in range(NSHARES):
-        stegoImage = (stegoOutputs[i] * 255).astype(np.uint8).copy()
-        if settings.nofileout == False:
-            stegoOutputPaths.append(f'output/{imfile}_htpatbin_stego_msg{payloadSize}_{i+1}of{NSHARES}.png')
-            io.imsave(stegoOutputPaths[i], stegoImage)
-
-        results[i, 0] = snr(normalOutput, stegoImage)
-        results[i, 1] = metrics.peak_signal_noise_ratio(stegoImage, normalOutput)
-        results[i, 2] = metrics.structural_similarity(stegoImage, normalOutput)
-
-    avg_snr = np.mean(results[:, 0])
-    avg_psnr = np.mean(results[:, 1])
-    avg_ssim = np.mean(results[:, 2])
-    return avg_snr, avg_psnr, avg_ssim
-
-
-def htstego_patcol(NSHARES, coverFile, payloadFile):
-    imfile = os.path.splitext(coverFile)[0]
-    I = io.imread(f'cover_imgs/{imfile}.png') // 26
-    M, N = I.shape[:2]
-    
     payloadSize = os.path.getsize(f'payloads/{payloadFile}')
     messageAscii = open(f'payloads/{payloadFile}').read()
     messageBinary = ''.join(format(ord(c), '08b') for c in messageAscii)
     messagePos = 1
-
-    normalOutput = np.zeros((M * 3, N * 3, 3))
-    stegoOutputs = np.zeros((NSHARES, M * 3, N * 3, 3))
-
+    
+    normalOutput = np.zeros((M * 3, N * 3, C))
+    stegoOutputs = np.zeros((NSHARES, M * 3, N * 3, C))
+    
     nrOfBlocks = M * N
     bwBlocks = countBWBlocks(I)
     nrOfUsableBlocks = nrOfBlocks - bwBlocks
@@ -408,26 +261,27 @@ def htstego_patcol(NSHARES, coverFile, payloadFile):
     if blockSize == 0:
         print(f'[{NSHARES:2d} {coverFile:9s} {payloadSize:4s}] message too long!')
         return [0, 0, 0]
+    
     results = np.zeros((NSHARES, 3))
     patMap = np.array([[2, 0, 4], [7, 8, 5], [3, 6, 1]])
-
+    
     for i in range(NSHARES):
         for j in range(M):
             for k in range(N):
-                for l in range(3):
+                for l in range(C):
                     p = I[j, k, l]
                     normalOutput[j * 3:(j + 1) * 3, k * 3:(k + 1) * 3, l] = (patMap < p).astype(int)
-            stegoOutputs[i] = normalOutput
-
-    linearStegoOutput = np.zeros((NSHARES, 3, M * N * 3, 3))
+        stegoOutputs[i] = normalOutput
+            
+    linearStegoOutput = np.zeros((NSHARES, 3, M * N * 3, C))
     linearStegoOutput[0] = convertHalftoneToArray(stegoOutputs[0], M, N)
     for i in range(1, NSHARES):
         linearStegoOutput[i] = linearStegoOutput[0]
-
+        
     for i in range(0, 3 * M * N, 3 * blockSize):
         if messagePos <= len(messageBinary):
             currentBit = messageBinary[messagePos - 1]
-            randomChannel = np.random.randint(3)
+            randomChannel = np.random.randint(C)
             currentSet = linearStegoOutput[0, :, i:i + (3 * blockSize), randomChannel].copy()
 
             embedHere = findEmbedPositionPat(currentSet)
@@ -446,25 +300,31 @@ def htstego_patcol(NSHARES, coverFile, payloadFile):
             messagePos += 1
         else:
             break
-
+    
     for i in range(NSHARES):
         stegoOutputs[i] = convertHalftoneToMatrix(linearStegoOutput[i], N, M)
 
     normalOutput = (normalOutput * 255).astype(np.uint8)
+    if outputMode=='binary':
+        normalOutput = normalOutput[:,:,0]
+        
     if settings.nofileout == False:
-        normalOutputPath = f'output/{imfile}_htpatcol_regular.png'
+        normalOutputPath = f'output/{imfile}_htpat{outputMode[:3]}_regular.png'
         io.imsave(normalOutputPath, normalOutput)
         stegoOutputPaths = []
 
     for i in range(NSHARES):
         stegoImage = (stegoOutputs[i] * 255).astype(np.uint8).copy()
+        if outputMode == 'binary':
+            stegoImage = stegoImage[:,:,0]
         if settings.nofileout == False:
-            stegoOutputPaths.append(f'output/{imfile}_htpatcol_stego_msg{payloadSize}_{i+1}of{NSHARES}.png')
+            stegoOutputPaths.append(f'output/{imfile}_htpat{outputMode[:3]}_stego_msg{payloadSize}_{i+1}of{NSHARES}.png')
             io.imsave(stegoOutputPaths[i], stegoImage)
 
+        cA = None if len(stegoImage.shape) == 2 else 2
         results[i, 0] = snr(normalOutput, stegoImage)
         results[i, 1] = metrics.peak_signal_noise_ratio(stegoImage, normalOutput)
-        results[i, 2] = metrics.structural_similarity(stegoImage, normalOutput,channel_axis=2)
+        results[i, 2] = metrics.structural_similarity(stegoImage, normalOutput, channel_axis=cA)
 
     avg_snr = np.mean(results[:, 0])
     avg_psnr = np.mean(results[:, 1])
