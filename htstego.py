@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
-import argparse, sys, settings
+import argparse
+import sys
+import settings
 from libhtstego import htstego_errdiff, htstego_pattern
 
-__version__ = '0.7'
+__version__ = '0.8'
 settings.init()
 
 if __name__ == '__main__':
@@ -19,10 +21,10 @@ if __name__ == '__main__':
     args_errdiff = parser.add_argument_group('Error Diffusion Options')
     args_errdiff.add_argument('--errdiffmethod', type=str, choices=['fan', 'floyd', 'jajuni'], help='error diffusion method')
 
-    args_optional = parser.add_argument_group('Output Options')
-    args_optional.add_argument('--no-output-files', action='store_true', help='do not produce output images')
-    args_optional.add_argument('--output-format', default='default', type=str, help='output format (default, json)')
-    args_optional.add_argument('--silent', action='store_true', help='do not display output on screen')
+    args_output = parser.add_argument_group('Output Options')
+    args_output.add_argument('--no-output-files', action='store_true', help='do not produce output images')
+    args_output.add_argument('--output-format', default='default', type=str, choices=['default', 'json'], help='output format')
+    args_output.add_argument('--silent', action='store_true', help='do not display output on screen')
 
     if len(sys.argv) == 1:
         parser.print_help()
@@ -45,7 +47,7 @@ if __name__ == '__main__':
         sys.exit(1)
 
     if args.htmethod == 'errdiff':
-        m, [avg_snr, avg_psnr, avg_ssim] = 'erdbin', htstego_errdiff(NSHARES=args.nshares, coverFile=args.cover, payloadFile=args.payload, errdiffmethod=args.errdiffmethod,outputMode=args.output_mode)
+        m, [avg_snr, avg_psnr, avg_ssim] = 'erdbin', htstego_errdiff(NSHARES=args.nshares, coverFile=args.cover, payloadFile=args.payload, errdiffmethod=args.errdiffmethod, outputMode=args.output_mode)
     elif args.htmethod == 'pattern':
         m, [avg_snr, avg_psnr, avg_ssim] = 'patcol', htstego_pattern(NSHARES=args.nshares, coverFile=args.cover, payloadFile=args.payload, outputMode=args.output_mode)
 

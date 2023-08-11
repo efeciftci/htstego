@@ -1,6 +1,9 @@
-import numpy as np
+import os.path
+import re
+from scipy import stats as st
 from skimage import io, metrics
-import os.path, re, settings
+import numpy as np
+import settings
 
 
 def snr(o, n):
@@ -37,7 +40,7 @@ def fan(I):
             new_pixel = np.round(old_pixel)
             I[y, x] = new_pixel
             err = old_pixel - new_pixel
-            
+
             if x < width - 1:
                 I[y, x + 1] += err * 7 / 16
             if y < height - 1:
@@ -109,7 +112,7 @@ def findEmbedPositionPat(currentSet):
     tol = 0
     while True:
         embedHere = np.random.randint(0, N // 3)
-        if np.sum(np.sum(currentSet[:,3 * embedHere:3 * embedHere + 3])) != 0 and np.sum(np.sum(currentSet[:, 3 * embedHere:3 * embedHere + 3])) != 9:
+        if np.sum(np.sum(currentSet[:, 3 * embedHere:3 * embedHere + 3])) != 0 and np.sum(np.sum(currentSet[:, 3 * embedHere:3 * embedHere + 3])) != 9:
             break
         tol += 1
         if tol == 100:
@@ -172,7 +175,7 @@ def htstego_errdiff(NSHARES, coverFile, payloadFile, errdiffmethod, outputMode):
     linearImage = np.zeros((M * N, C))
     stegoOutputs = np.zeros((NSHARES, M, N, C))
     linearStegoImages = np.zeros((NSHARES, M * N, C))
-    
+
     for i in range(C):
         normalOutput[:, :, i] = errdifffun(I[:, :, i])
         linearImage[:, i] = normalOutput[:, :, i].reshape(1, -1)[0]
@@ -207,8 +210,8 @@ def htstego_errdiff(NSHARES, coverFile, payloadFile, errdiffmethod, outputMode):
             break
 
     normalOutput = (normalOutput * 255).astype(np.uint8)
-    if outputMode=='binary':
-        normalOutput = normalOutput[:,:,0]
+    if outputMode == 'binary':
+        normalOutput = normalOutput[:, :, 0]
 
     if settings.nofileout == False:
         normalOutputPath = f'output/{imfile}_hterrdiff{outputMode[:3]}_regular_{errdiffmethod}.png'
@@ -220,7 +223,7 @@ def htstego_errdiff(NSHARES, coverFile, payloadFile, errdiffmethod, outputMode):
             stegoOutputs[i, :, :, j] = linearStegoImages[i, :, j].reshape(M, N)
         stegoImage = (stegoOutputs[i] * 255).astype(np.uint8)
         if outputMode == 'binary':
-            stegoImage = stegoImage[:,:,0]
+            stegoImage = stegoImage[:, :, 0]
         if settings.nofileout == False:
             stegoOutputPaths.append(f'output/{imfile}_hterrdiff{outputMode[:3]}_stego_msg{payloadSize}_{i+1}of{NSHARES}_{errdiffmethod}.png')
             io.imsave(stegoOutputPaths[i], stegoImage)
@@ -240,20 +243,20 @@ def htstego_pattern(NSHARES, coverFile, payloadFile, outputMode):
     imfile = os.path.splitext(coverFile)[0]
     I = io.imread(f'cover_imgs/{imfile}.png')
     if outputMode == 'binary':
-        I = (io.imread(f'cover_imgs/{imfile}.png', as_gray=True)*255).astype(np.uint8) // 26
+        I = (io.imread(f'cover_imgs/{imfile}.png', as_gray=True) * 255).astype(np.uint8) // 26
         I = np.expand_dims(I, axis=-1)
     else:
-        I = io.imread(f'cover_imgs/{imfile}.png') //26
+        I = io.imread(f'cover_imgs/{imfile}.png') // 26
     M, N, C = I.shape
-        
+
     payloadSize = os.path.getsize(f'payloads/{payloadFile}')
     messageAscii = open(f'payloads/{payloadFile}').read()
     messageBinary = ''.join(format(ord(c), '08b') for c in messageAscii)
     messagePos = 1
-    
+
     normalOutput = np.zeros((M * 3, N * 3, C))
     stegoOutputs = np.zeros((NSHARES, M * 3, N * 3, C))
-    
+
     nrOfBlocks = M * N
     bwBlocks = countBWBlocks(I)
     nrOfUsableBlocks = nrOfBlocks - bwBlocks
@@ -261,10 +264,10 @@ def htstego_pattern(NSHARES, coverFile, payloadFile, outputMode):
     if blockSize == 0:
         print(f'[{NSHARES:2d} {coverFile:9s} {payloadSize:4s}] message too long!')
         return [0, 0, 0]
-    
+
     results = np.zeros((NSHARES, 3))
     patMap = np.array([[2, 0, 4], [7, 8, 5], [3, 6, 1]])
-    
+
     for i in range(NSHARES):
         for j in range(M):
             for k in range(N):
@@ -272,12 +275,12 @@ def htstego_pattern(NSHARES, coverFile, payloadFile, outputMode):
                     p = I[j, k, l]
                     normalOutput[j * 3:(j + 1) * 3, k * 3:(k + 1) * 3, l] = (patMap < p).astype(int)
         stegoOutputs[i] = normalOutput
-            
+
     linearStegoOutput = np.zeros((NSHARES, 3, M * N * 3, C))
     linearStegoOutput[0] = convertHalftoneToArray(stegoOutputs[0], M, N)
     for i in range(1, NSHARES):
         linearStegoOutput[i] = linearStegoOutput[0]
-        
+
     for i in range(0, 3 * M * N, 3 * blockSize):
         if messagePos <= len(messageBinary):
             currentBit = messageBinary[messagePos - 1]
@@ -300,14 +303,14 @@ def htstego_pattern(NSHARES, coverFile, payloadFile, outputMode):
             messagePos += 1
         else:
             break
-    
+
     for i in range(NSHARES):
         stegoOutputs[i] = convertHalftoneToMatrix(linearStegoOutput[i], N, M)
 
     normalOutput = (normalOutput * 255).astype(np.uint8)
-    if outputMode=='binary':
-        normalOutput = normalOutput[:,:,0]
-        
+    if outputMode == 'binary':
+        normalOutput = normalOutput[:, :, 0]
+
     if settings.nofileout == False:
         normalOutputPath = f'output/{imfile}_htpat{outputMode[:3]}_regular.png'
         io.imsave(normalOutputPath, normalOutput)
@@ -316,7 +319,7 @@ def htstego_pattern(NSHARES, coverFile, payloadFile, outputMode):
     for i in range(NSHARES):
         stegoImage = (stegoOutputs[i] * 255).astype(np.uint8).copy()
         if outputMode == 'binary':
-            stegoImage = stegoImage[:,:,0]
+            stegoImage = stegoImage[:, :, 0]
         if settings.nofileout == False:
             stegoOutputPaths.append(f'output/{imfile}_htpat{outputMode[:3]}_stego_msg{payloadSize}_{i+1}of{NSHARES}.png')
             io.imsave(stegoOutputPaths[i], stegoImage)
@@ -330,3 +333,56 @@ def htstego_pattern(NSHARES, coverFile, payloadFile, outputMode):
     avg_psnr = np.mean(results[:, 1])
     avg_ssim = np.mean(results[:, 2])
     return avg_snr, avg_psnr, avg_ssim
+
+
+def htstego_pattern_extract(dirName):
+    carrierFiles = [file for file in os.listdir(dirName) if file.endswith('.png')]
+    images = []
+    for carrier in carrierFiles:
+        I = io.imread(f'{dirName}/{carrier}')
+        if len(I.shape) == 2:
+            I = np.expand_dims(I, axis=-1)
+        images.append(I)
+    M, N, C = images[0].shape
+
+    bitString = ''
+
+    for i in range(0, M, 3):
+        for j in range(0, N, 3):
+            for k in range(C):
+                sums = [np.sum(image[i:i + 3, j:j + 3, k] // 255) for image in images]
+                if len(set(sums)) > 1:
+                    bitString += '1' if st.mode(sums).mode < np.mean(sums) else '0'
+
+    msg = bytearray()
+    for i in range(0, len(bitString), 8):
+        msg.append(int(bitString[i:i + 8], 2))
+    return bytes(msg).decode('ascii')
+
+
+def htstego_errdiff_extract(dirName):
+    carrierFiles = [file for file in os.listdir(dirName) if file.endswith('.png')]
+    images = []
+    for carrier in carrierFiles:
+        I = io.imread(f'{dirName}/{carrier}')
+        if len(I.shape) == 2:
+            I = np.expand_dims(I, axis=-1)
+        images.append(I)
+    M, N, C = images[0].shape
+
+    bitString = ''
+
+    for i in range(M):
+        for j in range(N):
+            for k in range(C):
+                pVal = [image[i, j, k] for image in images]
+                if len(set(pVal)) > 1:
+                    for v in set(pVal):
+                        if pVal.count(v) == 1:
+                            bitString += '0' if v == 0 else '1'
+                            break
+
+    msg = bytearray()
+    for i in range(0, len(bitString), 8):
+        msg.append(int(bitString[i:i + 8], 2))
+    return bytes(msg).decode('ascii')

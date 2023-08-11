@@ -1,22 +1,22 @@
 
-# Halftone Steganography Utility
-This is a tool for generating stego images in binary format. You may check the following Wikipedia pages for detailed information:
+# Halftone Steganography and Extraction Utility
+This is a tool for generating stego images in binary format and extracting payloads from generated images. You may check the following Wikipedia pages for detailed information:
 
 - [Steganography](https://en.wikipedia.org/wiki/Steganography)
 - [Binary image](https://en.wikipedia.org/wiki/Binary_image)
 - [Digital halftoning](https://en.wikipedia.org/wiki/Halftone#Digital_halftoning)
 
 ## Setup
-In order to execute, you must have the `numpy` and `scikit-image` packages installed:
+In order to execute, you must have the `numpy`, `scikit-image` and `scipy` packages installed:
 
-    pip install numpy scikit-image
+    pip install numpy scikit-image scipy
 
 or
 
     pip install -r requirements.txt
 
-## How To Use
-Available options:
+## Payload Hiding
+Available options for `htstego.py`:
 
       -h, --help                          show this help message and exit
       -v, --version                       show program's version number and exit
@@ -57,8 +57,18 @@ and the following files will be created:
 
 where the "regular" is the file with no payloads and the others are carrier images with different portions of the payload.
 
+## Payload Extraction
+Available options for `htstego-extract.py`:
+
+      -h, --help                          show this help message and exit
+      -v, --version                       show program's version number and exit
+      --extract-from EXTRACT_FROM         extract from images in this directory
+      --htmethod {pattern,errdiff}        halftoning method
+
+By default, images in `output` directory will be used for extraction but this can be overridden with `--extract-from`. This directory must contain only and only the carrier images. `--htmethod` must be used to specify which extraction method will be used.
+
 ## Future
 
-- Message extraction
 - XML output
 - Ordered dithering method
+- A graphical user interface
