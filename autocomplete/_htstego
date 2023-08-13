@@ -11,7 +11,7 @@ function _htstego.py() {
         '--payload[input payload]:file:_path_files -W $PWD/payloads' \
         '--nshares[number of output shares to generate]:nshares' \
         '--errdiffmethod[error diffusion method (required when htmethod is errdiff)]::when:(fan floyd jajuni)' \
-        '--output-format[output format]::when:(default json)' \
+        '--output-format[output format]::when:(csv json xml)' \
         '--no-output-files[do not produce output images]' \
         '--silent[do not display output on screen]'
         

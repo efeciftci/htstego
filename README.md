@@ -36,16 +36,16 @@ Error Diffusion Options:
 Output Options:
 
       --no-output-files                   do not produce output images
-      --output-format OUTPUT_FORMAT       output format (default, json)
+      --output-format {csv,json,xml}      output format
       --silent                            do not display output on screen
 
 ### Example
 
-      ./htstego.py --htmethod errdiff --errdiffmethod floyd --cover airplane80_256rgb.png --payload payload512.txt --nshares 4 --output-mode binary 
+      ./htstego.py --htmethod errdiff --errdiffmethod floyd --cover airplane80_256rgb.png --payload payload512.txt --nshares 4 --output-mode binary
     
 When executed as above, the following output will be produced:
 
-      [erdbin] [4 airplane80_256rgb.png payload512.txt] [avg_snr: 15.8741] [avg_psnr: 18.0685] [avg_ssim: 0.9661]
+      {"status": "ok", "halftoning_method": "errdiff", "output_mode": "binary", "number_of_shares": 4, "cover_file": "airplane80_256rgb.png", "payload_file": "payload512.txt", "avg_snr": 15.8745, "avg_psnr": 18.0689, "avg_ssim": 0.9661}
       
 and the following files will be created:
 
@@ -69,6 +69,10 @@ By default, images in `output` directory will be used for extraction but this ca
 
 ## Future
 
-- XML and CSV output formats
 - Ordered dithering method
 - A graphical user interface
+
+## References
+The sample images in "cover_imgs" directory are from the [UC Merced Land Use Dataset](http://weegee.vision.ucmerced.edu/datasets/landuse.html):
+      
+      Yi Yang and Shawn Newsam, "Bag-Of-Visual-Words and Spatial Extensions for Land-Use Classification," ACM SIGSPATIAL International Conference on Advances in Geographic Information Systems (ACM GIS), 2010. 
