@@ -6,6 +6,8 @@ This is a tool for generating stego images in binary format and extracting paylo
 - [Binary image](https://en.wikipedia.org/wiki/Binary_image)
 - [Digital halftoning](https://en.wikipedia.org/wiki/Halftone#Digital_halftoning)
 
+The sample images provided in "cover_imgs" directory are obtained from the "UC Merced Land Use Dataset" [1].
+
 ## Setup
 In order to execute, you must have the `numpy`, `scikit-image` and `scipy` packages installed:
 
@@ -36,6 +38,7 @@ Error Diffusion Options:
 Output Options:
 
       --no-output-files                   do not produce output images
+      --no-regular-output                 do not produce regular output image
       --output-format {csv,json,xml}      output format
       --silent                            do not display output on screen
 
@@ -70,9 +73,7 @@ By default, images in `output` directory will be used for extraction but this ca
 ## Future
 
 - Ordered dithering method
-- A graphical user interface
+- Graphical user interface
 
 ## References
-The sample images in "cover_imgs" directory are from the [UC Merced Land Use Dataset](http://weegee.vision.ucmerced.edu/datasets/landuse.html):
-      
-      Yi Yang and Shawn Newsam, "Bag-Of-Visual-Words and Spatial Extensions for Land-Use Classification," ACM SIGSPATIAL International Conference on Advances in Geographic Information Systems (ACM GIS), 2010. 
+[1] Yi Yang and Shawn Newsam, "Bag-Of-Visual-Words and Spatial Extensions for Land-Use Classification," ACM SIGSPATIAL International Conference on Advances in Geographic Information Systems (ACM GIS), 2010. 

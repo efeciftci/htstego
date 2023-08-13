@@ -25,6 +25,7 @@ if __name__ == '__main__':
 
     args_output = parser.add_argument_group('Output Options')
     args_output.add_argument('--no-output-files', action='store_true', help='do not produce output images')
+    args_output.add_argument('--no-regular-output', action='store_true', help='do not produce regular output image')
     args_output.add_argument('--output-format', default='json', type=str, choices=['csv', 'json', 'xml'], help='output format')
     args_output.add_argument('--silent', action='store_true', help='do not display output on screen')
 
@@ -34,6 +35,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     settings.nofileout = args.no_output_files if args.no_output_files else False
+    settings.noregularoutput = args.no_regular_output if args.no_regular_output else False
     settings.nostdout = args.silent if args.silent else False
     settings.outputformat = args.output_format if args.output_format else 'json'
 

@@ -212,8 +212,9 @@ def htstego_errdiff(NSHARES, coverFile, payloadFile, errdiffmethod, outputMode):
         normalOutput = normalOutput[:, :, 0]
 
     if settings.nofileout == False:
-        normalOutputPath = f'output/{imfile}_hterrdiff{outputMode[:3]}_regular_{errdiffmethod}.png'
-        io.imsave(normalOutputPath, normalOutput)
+        if settings.noregularoutput == False:
+            normalOutputPath = f'output/{imfile}_hterrdiff{outputMode[:3]}_regular_{errdiffmethod}.png'
+            io.imsave(normalOutputPath, normalOutput)
         stegoOutputPaths = []
 
     for i in range(NSHARES):
@@ -309,8 +310,9 @@ def htstego_pattern(NSHARES, coverFile, payloadFile, outputMode):
         normalOutput = normalOutput[:, :, 0]
 
     if settings.nofileout == False:
-        normalOutputPath = f'output/{imfile}_htpat{outputMode[:3]}_regular.png'
-        io.imsave(normalOutputPath, normalOutput)
+        if settings.noregularoutput == False:
+            normalOutputPath = f'output/{imfile}_htpat{outputMode[:3]}_regular.png'
+            io.imsave(normalOutputPath, normalOutput)
         stegoOutputPaths = []
 
     for i in range(NSHARES):

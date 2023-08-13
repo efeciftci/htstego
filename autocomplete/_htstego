@@ -13,6 +13,7 @@ function _htstego.py() {
         '--errdiffmethod[error diffusion method (required when htmethod is errdiff)]::when:(fan floyd jajuni)' \
         '--output-format[output format]::when:(csv json xml)' \
         '--no-output-files[do not produce output images]' \
+        '--no-regular-output[do not produce regular output image]' \
         '--silent[do not display output on screen]'
         
         return 0
