@@ -69,6 +69,6 @@ By default, images in `output` directory will be used for extraction but this ca
 
 ## Future
 
-- XML output
+- XML and CSV output formats
 - Ordered dithering method
 - A graphical user interface

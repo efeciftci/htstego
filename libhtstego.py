@@ -168,8 +168,7 @@ def htstego_errdiff(NSHARES, coverFile, payloadFile, errdiffmethod, outputMode):
 
     blockSize = M * N // len(messageBinary)
     if blockSize == 0:
-        print(f'[{NSHARES:2d} {coverFile:9s} {payloadFile}] message too long!')
-        return
+        return 'payload too long', 0, 0, 0
 
     normalOutput = np.zeros((M, N, C))
     linearImage = np.zeros((M * N, C))
@@ -192,7 +191,6 @@ def htstego_errdiff(NSHARES, coverFile, payloadFile, errdiffmethod, outputMode):
             randomChannel = np.random.randint(C)
 
             if i + blockSize - 1 > M * N:
-                print('end: ', i + blockSize - 1)
                 break
 
             currentBlock = linearImage[i:i + blockSize, randomChannel]
@@ -236,7 +234,7 @@ def htstego_errdiff(NSHARES, coverFile, payloadFile, errdiffmethod, outputMode):
     avg_snr = np.mean(results[:, 0])
     avg_psnr = np.mean(results[:, 1])
     avg_ssim = np.mean(results[:, 2])
-    return avg_snr, avg_psnr, avg_ssim
+    return 'ok', avg_snr, avg_psnr, avg_ssim
 
 
 def htstego_pattern(NSHARES, coverFile, payloadFile, outputMode):
@@ -262,8 +260,7 @@ def htstego_pattern(NSHARES, coverFile, payloadFile, outputMode):
     nrOfUsableBlocks = nrOfBlocks - bwBlocks
     blockSize = nrOfUsableBlocks // len(messageBinary)
     if blockSize == 0:
-        print(f'[{NSHARES:2d} {coverFile:9s} {payloadSize:4s}] message too long!')
-        return [0, 0, 0]
+        return 'payload too long', 0, 0, 0
 
     results = np.zeros((NSHARES, 3))
     patMap = np.array([[2, 0, 4], [7, 8, 5], [3, 6, 1]])
@@ -332,7 +329,7 @@ def htstego_pattern(NSHARES, coverFile, payloadFile, outputMode):
     avg_snr = np.mean(results[:, 0])
     avg_psnr = np.mean(results[:, 1])
     avg_ssim = np.mean(results[:, 2])
-    return avg_snr, avg_psnr, avg_ssim
+    return 'ok', avg_snr, avg_psnr, avg_ssim
 
 
 def htstego_pattern_extract(dirName):

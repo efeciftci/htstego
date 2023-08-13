@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import json
 import sys
 import settings
 from libhtstego import htstego_errdiff, htstego_pattern
@@ -47,15 +48,17 @@ if __name__ == '__main__':
         sys.exit(1)
 
     if args.htmethod == 'errdiff':
-        m, [avg_snr, avg_psnr, avg_ssim] = 'erdbin', htstego_errdiff(NSHARES=args.nshares, coverFile=args.cover, payloadFile=args.payload, errdiffmethod=args.errdiffmethod, outputMode=args.output_mode)
+        m = 'erd' + args.output_mode[:3]
+        ret_msg, avg_snr, avg_psnr, avg_ssim = htstego_errdiff(NSHARES=args.nshares, coverFile=args.cover, payloadFile=args.payload, errdiffmethod=args.errdiffmethod, outputMode=args.output_mode)
     elif args.htmethod == 'pattern':
-        m, [avg_snr, avg_psnr, avg_ssim] = 'patcol', htstego_pattern(NSHARES=args.nshares, coverFile=args.cover, payloadFile=args.payload, outputMode=args.output_mode)
+        m = 'pat' + args.output_mode[:3]
+        ret_msg, avg_snr, avg_psnr, avg_ssim = htstego_pattern(NSHARES=args.nshares, coverFile=args.cover, payloadFile=args.payload, outputMode=args.output_mode)
 
     if settings.nostdout == False:
         if settings.outputformat == 'json':
-            import json
             print(
                 json.dumps({
+                    'status': ret_msg,
                     'method': m,
                     'nshares': args.nshares,
                     'coverFile': args.cover,
@@ -65,4 +68,7 @@ if __name__ == '__main__':
                     'avg_ssim': round(avg_ssim, 4)
                 }))
         else:
-            print(f'[{m}] [{args.nshares} {args.cover} {args.payload}] [avg_snr: {avg_snr:.4f}] [avg_psnr: {avg_psnr:.4f}] [avg_ssim: {avg_ssim:.4f}]')
+            if ret_msg == 'ok':
+                print(f'[{m}] [{args.nshares} {args.cover} {args.payload}] [avg_snr: {avg_snr:.4f}] [avg_psnr: {avg_psnr:.4f}] [avg_ssim: {avg_ssim:.4f}]')
+            else:
+                print(f'[{m}] [{args.nshares} {args.cover} {args.payload}] [{ret_msg}]')
