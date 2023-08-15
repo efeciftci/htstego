@@ -81,6 +81,10 @@ Assuming the output directory contains the whole set of images generated with er
 
 Both utilities can also be used via a simple graphical user interface (`htstego-gui.py` and `htstego-extract-gui.py`).
 
+![gui_stego](https://github.com/efeciftci/libhtstego/assets/3438150/d9cb1b55-d2b6-49d5-8cdc-cb17721e9000)
+![gui_extract](https://github.com/efeciftci/libhtstego/assets/3438150/67932b48-da5b-4680-bf50-96108589b4a5)
+
+
 ## Future
 
 - Ordered dithering method
