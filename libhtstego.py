@@ -1,5 +1,7 @@
+import json
 import os.path
 import re
+import xml.dom.minidom as minidom
 from scipy import stats as st
 from skimage import io, metrics
 import numpy as np
@@ -151,6 +153,26 @@ def convertHalftoneToMatrix(inputMatrix, sWidth, sHeight):
     return outputMatrix
 
 
+def output_formatter(params, output_format):
+    output = ''
+    if output_format == 'csv':
+        output += ','.join(name for name in params) + '\n'
+        output += ','.join(str(value) for value in params.values())
+    elif output_format == 'json':
+        output += json.dumps(params)
+    elif output_format == 'xml':
+        md = minidom.Document()
+        xml_root = md.createElement('htstegoresult')
+        md.appendChild(xml_root)
+        for element_name, element_value in params.items():
+            xml_element = md.createElement(element_name)
+            xml_element.appendChild(md.createTextNode(str(element_value)))
+            xml_root.appendChild(xml_element)
+        output += md.toxml()
+
+    return output
+
+
 def htstego_errdiff(NSHARES, coverFile, payloadFile, errdiffmethod, outputMode):
     errdifffun = globals().get(errdiffmethod)
 
@@ -211,7 +233,7 @@ def htstego_errdiff(NSHARES, coverFile, payloadFile, errdiffmethod, outputMode):
         normalOutput = normalOutput[:, :, 0]
 
     if settings.nofileout == False:
-        imfile = os.path.basename(coverFile).rsplit('.',1)[0]
+        imfile = os.path.basename(coverFile).rsplit('.', 1)[0]
         if settings.noregularoutput == False:
             normalOutputPath = f'output/{imfile}_hterrdiff{outputMode[:3]}_regular_{errdiffmethod}.png'
             io.imsave(normalOutputPath, normalOutput)
@@ -308,7 +330,7 @@ def htstego_pattern(NSHARES, coverFile, payloadFile, outputMode):
         normalOutput = normalOutput[:, :, 0]
 
     if settings.nofileout == False:
-        imfile = os.path.basename(coverFile).rsplit('.',1)[0]
+        imfile = os.path.basename(coverFile).rsplit('.', 1)[0]
         if settings.noregularoutput == False:
             normalOutputPath = f'output/{imfile}_htpat{outputMode[:3]}_regular.png'
             io.imsave(normalOutputPath, normalOutput)

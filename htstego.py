@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 import argparse
-import json
 import sys
 import settings
-import xml.dom.minidom as minidom
-from libhtstego import htstego_errdiff, htstego_pattern
+from libhtstego import htstego_errdiff, htstego_pattern, output_formatter
 
 __version__ = '0.8'
 settings.init()
@@ -49,43 +47,15 @@ if __name__ == '__main__':
         ret_msg, avg_snr, avg_psnr, avg_ssim = htstego_pattern(NSHARES=args.nshares, coverFile=args.cover, payloadFile=args.payload, outputMode=args.output_mode)
 
     if settings.nostdout == False:
-        avg_snr = round(avg_snr, 4)
-        avg_psnr = round(avg_psnr, 4)
-        avg_ssim = round(avg_ssim, 4)
-        if settings.outputformat == 'csv':
-            print('status,halftoning_method,output_mode,number_of_shares,cover_file,payload_file,avg_snr,avg_psnr,avg_ssim')
-            print(ret_msg, args.htmethod, args.output_mode, args.nshares, args.cover, args.payload, avg_snr, avg_psnr, avg_ssim, sep=',')
-        elif settings.outputformat == 'json':
-            print(json.dumps({
-                    'status': ret_msg,
-                    'halftoning_method': args.htmethod,
-                    'output_mode': args.output_mode,
-                    'number_of_shares': args.nshares,
-                    'cover_file': args.cover,
-                    'payload_file': args.payload,
-                    'avg_snr': avg_snr,
-                    'avg_psnr': avg_psnr,
-                    'avg_ssim': avg_ssim
-                    }))
-        elif settings.outputformat == 'xml':
-            elements = {
-                'halftoning_method': args.htmethod,
-                'output_mode': args.output_mode,
-                'number_of_shares': str(args.nshares),
-                'cover_file': args.cover,
-                'payload_file': args.payload,
-                'avg_snr': str(avg_snr),
-                'avg_psnr': str(avg_psnr),
-                'avg_ssim': str(avg_ssim)
-            }
-
-            md = minidom.Document()
-            xml_root = md.createElement('htstegoresult')
-            md.appendChild(xml_root)
-
-            for element_name, element_value in elements.items():
-                xml_element = md.createElement(element_name)
-                xml_element.appendChild(md.createTextNode(element_value))
-                xml_root.appendChild(xml_element)
-
-            print(md.toxml())
+        params = {
+            'status': ret_msg,
+            'halftoning_method': args.htmethod,
+            'output_mode': args.output_mode,
+            'number_of_shares': args.nshares,
+            'cover_file': args.cover,
+            'payload_file': args.payload,
+            'avg_snr': round(avg_snr, 4),
+            'avg_psnr': round(avg_psnr, 4),
+            'avg_ssim': round(avg_ssim, 4)
+        }
+        print(output_formatter(params, settings.outputformat))
