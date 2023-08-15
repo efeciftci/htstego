@@ -154,16 +154,15 @@ def convertHalftoneToMatrix(inputMatrix, sWidth, sHeight):
 def htstego_errdiff(NSHARES, coverFile, payloadFile, errdiffmethod, outputMode):
     errdifffun = globals().get(errdiffmethod)
 
-    imfile = os.path.splitext(coverFile)[0]
     if outputMode == 'binary':
-        I = io.imread(f'cover_imgs/{imfile}.png', as_gray=True)
+        I = io.imread(coverFile, as_gray=True)
         I = np.expand_dims(I, axis=-1)
     else:
-        I = io.imread(f'cover_imgs/{imfile}.png') / 255.0
+        I = io.imread(coverFile) / 255.0
     M, N, C = I.shape
 
-    payloadSize = os.path.getsize(f'payloads/{payloadFile}')
-    messageAscii = open(f'payloads/{payloadFile}').read()
+    payloadSize = os.path.getsize(payloadFile)
+    messageAscii = open(payloadFile).read()
     messageBinary = ''.join(format(ord(c), '08b') for c in messageAscii)
 
     blockSize = M * N // len(messageBinary)
@@ -212,6 +211,7 @@ def htstego_errdiff(NSHARES, coverFile, payloadFile, errdiffmethod, outputMode):
         normalOutput = normalOutput[:, :, 0]
 
     if settings.nofileout == False:
+        imfile = os.path.basename(coverFile).rsplit('.',1)[0]
         if settings.noregularoutput == False:
             normalOutputPath = f'output/{imfile}_hterrdiff{outputMode[:3]}_regular_{errdiffmethod}.png'
             io.imsave(normalOutputPath, normalOutput)
@@ -239,17 +239,15 @@ def htstego_errdiff(NSHARES, coverFile, payloadFile, errdiffmethod, outputMode):
 
 
 def htstego_pattern(NSHARES, coverFile, payloadFile, outputMode):
-    imfile = os.path.splitext(coverFile)[0]
-    I = io.imread(f'cover_imgs/{imfile}.png')
     if outputMode == 'binary':
-        I = (io.imread(f'cover_imgs/{imfile}.png', as_gray=True) * 255).astype(np.uint8) // 26
+        I = (io.imread(coverFile, as_gray=True) * 255).astype(np.uint8) // 26
         I = np.expand_dims(I, axis=-1)
     else:
-        I = io.imread(f'cover_imgs/{imfile}.png') // 26
+        I = io.imread(coverFile) // 26
     M, N, C = I.shape
 
-    payloadSize = os.path.getsize(f'payloads/{payloadFile}')
-    messageAscii = open(f'payloads/{payloadFile}').read()
+    payloadSize = os.path.getsize(payloadFile)
+    messageAscii = open(payloadFile).read()
     messageBinary = ''.join(format(ord(c), '08b') for c in messageAscii)
     messagePos = 1
 
@@ -310,6 +308,7 @@ def htstego_pattern(NSHARES, coverFile, payloadFile, outputMode):
         normalOutput = normalOutput[:, :, 0]
 
     if settings.nofileout == False:
+        imfile = os.path.basename(coverFile).rsplit('.',1)[0]
         if settings.noregularoutput == False:
             normalOutputPath = f'output/{imfile}_htpat{outputMode[:3]}_regular.png'
             io.imsave(normalOutputPath, normalOutput)
