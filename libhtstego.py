@@ -233,6 +233,8 @@ def htstego_errdiff(NSHARES, coverFile, payloadFile, errdiffmethod, outputMode):
         normalOutput = normalOutput[:, :, 0]
 
     if settings.nofileout == False:
+        if not os.path.exists('output'):
+            os.makedirs('output')
         imfile = os.path.basename(coverFile).rsplit('.', 1)[0]
         if settings.noregularoutput == False:
             normalOutputPath = f'output/{imfile}_hterrdiff{outputMode[:3]}_regular_{errdiffmethod}.png'
@@ -330,6 +332,8 @@ def htstego_pattern(NSHARES, coverFile, payloadFile, outputMode):
         normalOutput = normalOutput[:, :, 0]
 
     if settings.nofileout == False:
+        if not os.path.exists('output'):
+            os.makedirs('output')
         imfile = os.path.basename(coverFile).rsplit('.', 1)[0]
         if settings.noregularoutput == False:
             normalOutputPath = f'output/{imfile}_htpat{outputMode[:3]}_regular.png'
