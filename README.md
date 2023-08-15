@@ -1,4 +1,3 @@
-
 # Halftone Steganography and Extraction Utility
 This is a tool for generating stego images in binary format and extracting payloads from generated images. You may check the following Wikipedia pages for detailed information:
 
@@ -48,7 +47,7 @@ Output Options:
     
 When executed as above, the following output will be produced:
 
-      {"status": "ok", "halftoning_method": "errdiff", "output_mode": "binary", "number_of_shares": 4, "cover_file": "airplane80_256rgb.png", "payload_file": "payload512.txt", "avg_snr": 15.8745, "avg_psnr": 18.0689, "avg_ssim": 0.9661}
+      {"status": "ok", "halftoning_method": "errdiff", "output_mode": "binary", "number_of_shares": 4, "cover_file": "cover_imgs/airplane80_256rgb.png", "payload_file": "payloads/payload512.txt", "avg_snr": 15.8741, "avg_psnr": 18.0685, "avg_ssim": 0.9661}
       
 and the following files will be created:
 
@@ -70,10 +69,21 @@ Available options for `htstego-extract.py`:
 
 By default, images in `output` directory will be used for extraction but this can be overridden with `--extract-from`. This directory must contain only and only the carrier images. `--htmethod` must be used to specify which extraction method will be used.
 
+### Example
+
+      ./htstego-extract.py --htmethod pattern
+      
+Assuming the output directory contains the whole set of images generated with error diffusion method, the following output will be produced:
+
+      Result: Donec ut mauris sit amet ...
+      
+## Graphical User Interface
+
+Both utilities can also be used via a simple graphical user interface (`htstego-gui.py` and `htstego-extract-gui.py`).
+
 ## Future
 
 - Ordered dithering method
-- Graphical user interface
 
 ## References
 [1] Yi Yang and Shawn Newsam, "Bag-Of-Visual-Words and Spatial Extensions for Land-Use Classification," ACM SIGSPATIAL International Conference on Advances in Geographic Information Systems (ACM GIS), 2010. 

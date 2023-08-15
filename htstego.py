@@ -4,7 +4,7 @@ import sys
 import settings
 from libhtstego import htstego_errdiff, htstego_pattern, output_formatter
 
-__version__ = '0.8'
+__version__ = '1.0'
 settings.init()
 
 if __name__ == '__main__':

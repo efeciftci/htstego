@@ -3,7 +3,7 @@ import argparse
 import sys
 from libhtstego import htstego_errdiff_extract, htstego_pattern_extract
 
-__version__ = '0.8'
+__version__ = '1.0'
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=f'Halftone Steganography Extraction Utility Version {__version__}')
@@ -19,4 +19,4 @@ if __name__ == '__main__':
 
     dirName = args.extract_from if args.extract_from else 'output'
     msg = htstego_errdiff_extract(dirName) if args.htmethod == 'errdiff' else htstego_pattern_extract(dirName)
-    print('Extracted:', msg)
+    print('Result:', msg)

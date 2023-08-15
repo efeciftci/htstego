@@ -360,15 +360,19 @@ def htstego_pattern(NSHARES, coverFile, payloadFile, outputMode):
 
 
 def htstego_pattern_extract(dirName):
+    if not os.path.exists(dirName):
+        return
+
     carrierFiles = [file for file in os.listdir(dirName) if file.endswith('.png')]
     images = []
+
     for carrier in carrierFiles:
         I = io.imread(f'{dirName}/{carrier}')
         if len(I.shape) == 2:
             I = np.expand_dims(I, axis=-1)
         images.append(I)
     M, N, C = images[0].shape
-
+    
     bitString = ''
 
     for i in range(0, M, 3):
@@ -381,10 +385,17 @@ def htstego_pattern_extract(dirName):
     msg = bytearray()
     for i in range(0, len(bitString), 8):
         msg.append(int(bitString[i:i + 8], 2))
-    return bytes(msg).decode('ascii')
+        
+    try:
+        return bytes(msg).decode('ascii')
+    except:
+        return 'Cannot extract payload'
 
 
 def htstego_errdiff_extract(dirName):
+    if not os.path.exists(dirName):
+        return
+
     carrierFiles = [file for file in os.listdir(dirName) if file.endswith('.png')]
     images = []
     for carrier in carrierFiles:
@@ -409,4 +420,8 @@ def htstego_errdiff_extract(dirName):
     msg = bytearray()
     for i in range(0, len(bitString), 8):
         msg.append(int(bitString[i:i + 8], 2))
-    return bytes(msg).decode('ascii')
+        
+    try:
+        return bytes(msg).decode('ascii')
+    except:
+        return 'Cannot extract payload'
