@@ -27,7 +27,7 @@ def update_noregularoutput_state():
 
 
 def browse_cover_image():
-    cover_image_path = filedialog.askopenfilename(initialdir='.', filetypes=[('Image files', '*.jpg *.jpeg *.png *.bmp')])
+    cover_image_path = filedialog.askopenfilename(initialdir='.', filetypes=[('Image files', '*.jpg *.jpeg *.png *.bmp *.tif')])
     cover_entry.delete(0, tk.END)
     cover_entry.insert(0, cover_image_path)
 
