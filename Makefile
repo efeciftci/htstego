@@ -2,5 +2,5 @@ setup:
 	pip install -r requirements.txt
 
 clean:
-	rm -vf output/*.png
-	rm -vrf __pycache__/
+	rm -vf src/output/*.png
+	rm -vrf src/__pycache__/
