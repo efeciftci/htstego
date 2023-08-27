@@ -38,4 +38,4 @@ if __name__ == '__main__':
 
     dirName = args.extract_from if args.extract_from else 'output'
     msg = htstego_errdiff_extract(dirName) if args.htmethod == 'errdiff' else htstego_pattern_extract(dirName)
-    print('Result:', msg)
+    print(msg)
