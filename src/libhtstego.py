@@ -201,6 +201,10 @@ def htstego_errdiff(NSHARES, coverFile, payloadFile, errdiffmethod, outputMode):
         I = np.expand_dims(I, axis=-1)
     else:
         I = io.imread(coverFile) / 255.0
+
+    if outputMode == 'color' and len(I.shape) < 3:
+        return 'cannot generate color output from grayscale input', 0, 0, 0
+
     M, N, C = I.shape
 
     payloadSize = os.path.getsize(payloadFile)
