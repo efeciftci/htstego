@@ -59,7 +59,7 @@ def browse_payload():
 
 def generate_output():
     settings.nofileout = bool(nooutputfiles_var.get())
-    settings.noregularoutput = bool(noregularoutput_var.get())
+    settings.regularoutput = bool(regularoutput_var.get())
     settings.nostdout = False
     settings.outputformat = outputformat_var.get()
 
@@ -156,12 +156,12 @@ options_frame = tk.LabelFrame(f, text='Options')
 options_frame.grid(column=0, row=3, sticky='we', padx=5, pady=5)
 
 nooutputfiles_var = tk.IntVar()
-nooutputfiles_check = tk.Checkbutton(options_frame, text='Do not produce output files', variable=nooutputfiles_var, command=update_noregularoutput_state)
+nooutputfiles_check = tk.Checkbutton(options_frame, text='Do not generate output files', variable=nooutputfiles_var, command=update_noregularoutput_state)
 nooutputfiles_check.grid(column=0, row=0, sticky='w')
 
-noregularoutput_var = tk.IntVar()
-noregularoutput_check = tk.Checkbutton(options_frame, text='Do not produce regular output file', variable=noregularoutput_var)
-noregularoutput_check.grid(column=0, row=1, sticky='w')
+regularoutput_var = tk.IntVar()
+regularoutput_check = tk.Checkbutton(options_frame, text='Generate regular output file', variable=regularoutput_var)
+regularoutput_check.grid(column=0, row=1, sticky='w')
 
 outputformat_frame = tk.LabelFrame(f, text='Output Format')
 outputformat_frame.grid(column=1, row=3, sticky='wne', padx=5, pady=5)

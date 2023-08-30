@@ -39,27 +39,26 @@ Error Diffusion Options:
 Output Options:
 
       --no-output-files                   do not produce output images
-      --no-regular-output                 do not produce regular output image
+      --generate-regular-output           generate nonstego output image
       --output-format {csv,json,xml}      output format
       --silent                            do not display output on screen
 
 ### Example
 
       ./htstego.py --htmethod errdiff --errdiffmethod floyd --cover airplane80_256rgb.png --payload payload512.txt --nshares 4 --output-mode binary
-    
+
 When executed as above, the following output will be displayed:
 
       {"status": "ok", "halftoning_method": "errdiff", "output_mode": "binary", "number_of_shares": 4, "cover_file": "cover_imgs/airplane80_256rgb.png", "payload_file": "payloads/payload512.txt", "avg_snr": 15.8741, "avg_psnr": 18.0685, "avg_ssim": 0.9661}
-      
+
 and the following files will be created:
 
-      output/airplane80_256rgb_hterrdiffbin_regular_floyd.png
       output/airplane80_256rgb_hterrdiffbin_stego_msg512_1of4_floyd.png
       output/airplane80_256rgb_hterrdiffbin_stego_msg512_2of4_floyd.png
       output/airplane80_256rgb_hterrdiffbin_stego_msg512_3of4_floyd.png
       output/airplane80_256rgb_hterrdiffbin_stego_msg512_4of4_floyd.png
 
-where the "regular" is the file with no payloads and the others are carrier images with different portions of the payload.
+where each file is a stego image carrying different portions of the payload.
 
 ## Payload Extraction
 Available options for `htstego-extract.py`:
@@ -74,11 +73,11 @@ By default, images in `output` directory will be used for extraction but this ca
 ### Example
 
       ./htstego-extract.py --htmethod pattern
-      
+
 Assuming the output directory contains the whole set of images generated with error diffusion method, the following output will be produced:
 
       Result: Donec ut mauris sit amet ...
-      
+
 ## Graphical User Interface
 
 Both utilities can also be used via a simple graphical user interface (`htstego-gui.py` and `htstego-extract-gui.py`). For GNU/Linux distributions such as Debian or Ubuntu, `python3-tk` package (and its dependencies) must be installed. For other distributions, please refer to the documentation of the distribution.

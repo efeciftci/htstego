@@ -20,6 +20,6 @@
 
 def init():
     global nofileout
-    global noregularoutput
+    global regularoutput
     global nostdout
     global outputformat
