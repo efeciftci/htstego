@@ -359,7 +359,7 @@ def htstego_pattern(NSHARES, coverFile, payloadFile, outputMode):
         if not os.path.exists('output'):
             os.makedirs('output')
         imfile = os.path.basename(coverFile).rsplit('.', 1)[0]
-        if settings.regularoutput == False:
+        if settings.regularoutput == True:
             normalOutputPath = f'output/{imfile}_htpat{outputMode[:3]}_regular.png'
             io.imsave(normalOutputPath, normalOutput)
         stegoOutputPaths = []

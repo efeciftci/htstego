@@ -32,7 +32,6 @@ if __name__ == '__main__':
 
     args_required = parser.add_argument_group('Required Options')
     args_required.add_argument('--htmethod', type=str, required=True, choices=['pattern', 'errdiff'], help='halftoning method')
-    args_required.add_argument('--output-mode', type=str, required=True, choices=['binary', 'color'], help='output mode')
     args_required.add_argument('--cover', type=str, required=True, help='input image')
     args_required.add_argument('--payload', type=str, required=True, help='input payload')
     args_required.add_argument('--nshares', type=int, required=True, help='number of output shares to generate')
@@ -43,6 +42,7 @@ if __name__ == '__main__':
     args_output = parser.add_argument_group('Output Options')
     args_output.add_argument('--no-output-files', action='store_true', help='do not produce output images')
     args_output.add_argument('--generate-regular-output', action='store_true', help='generate nonstego output image')
+    args_output.add_argument('--output-color', type=str, choices=['binary', 'color'], default='binary', help='output color')
     args_output.add_argument('--output-format', default='json', type=str, choices=['csv', 'json', 'xml'], help='output format')
     args_output.add_argument('--silent', action='store_true', help='do not display output on screen')
 
@@ -61,15 +61,15 @@ if __name__ == '__main__':
         sys.exit(1)
 
     if args.htmethod == 'errdiff':
-        ret_msg, avg_snr, avg_psnr, avg_ssim = htstego_errdiff(NSHARES=args.nshares, coverFile=args.cover, payloadFile=args.payload, errdiffmethod=args.errdiffmethod, outputMode=args.output_mode)
+        ret_msg, avg_snr, avg_psnr, avg_ssim = htstego_errdiff(NSHARES=args.nshares, coverFile=args.cover, payloadFile=args.payload, errdiffmethod=args.errdiffmethod, outputMode=args.output_color)
     elif args.htmethod == 'pattern':
-        ret_msg, avg_snr, avg_psnr, avg_ssim = htstego_pattern(NSHARES=args.nshares, coverFile=args.cover, payloadFile=args.payload, outputMode=args.output_mode)
+        ret_msg, avg_snr, avg_psnr, avg_ssim = htstego_pattern(NSHARES=args.nshares, coverFile=args.cover, payloadFile=args.payload, outputMode=args.output_color)
 
     if settings.nostdout == False:
         params = {
             'status': ret_msg,
             'halftoning_method': args.htmethod,
-            'output_mode': args.output_mode,
+            'output_color': args.output_color,
             'number_of_shares': args.nshares,
             'cover_file': args.cover,
             'payload_file': args.payload,

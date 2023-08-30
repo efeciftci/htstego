@@ -27,7 +27,6 @@ Available options for `htstego.py`:
 Required Options:
 
       --htmethod {pattern,errdiff}        halftoning method
-      --output-mode {binary,color}        output mode
       --cover COVER                       input image
       --payload PAYLOAD                   input payload
       --nshares NSHARES                   number of output shares to generate
@@ -40,23 +39,24 @@ Output Options:
 
       --no-output-files                   do not produce output images
       --generate-regular-output           generate nonstego output image
+      --output-color {binary,color}       output color
       --output-format {csv,json,xml}      output format
       --silent                            do not display output on screen
 
 ### Example
 
-      ./htstego.py --htmethod errdiff --errdiffmethod floyd --cover airplane80_256rgb.png --payload payload512.txt --nshares 4 --output-mode binary
+      ./htstego.py --cover cover_imgs/airplane80.tif --payload payloads/payload128.txt --nshares 4 --htmethod errdiff --errdiffmethod floyd
 
 When executed as above, the following output will be displayed:
 
-      {"status": "ok", "halftoning_method": "errdiff", "output_mode": "binary", "number_of_shares": 4, "cover_file": "cover_imgs/airplane80_256rgb.png", "payload_file": "payloads/payload512.txt", "avg_snr": 15.8741, "avg_psnr": 18.0685, "avg_ssim": 0.9661}
+      {"status": "ok", "halftoning_method": "errdiff", "output_color": "binary", "number_of_shares": 4, "cover_file": "cover_imgs/airplane80.tif", "payload_file": "payloads/payload128.txt", "avg_snr": 21.8902, "avg_psnr": 24.0846, "avg_ssim": 0.9915}
 
 and the following files will be created:
 
-      output/airplane80_256rgb_hterrdiffbin_stego_msg512_1of4_floyd.png
-      output/airplane80_256rgb_hterrdiffbin_stego_msg512_2of4_floyd.png
-      output/airplane80_256rgb_hterrdiffbin_stego_msg512_3of4_floyd.png
-      output/airplane80_256rgb_hterrdiffbin_stego_msg512_4of4_floyd.png
+      output/airplane80_hterrdiffbin_stego_msg128_1of4_floyd.png
+      output/airplane80_hterrdiffbin_stego_msg128_2of4_floyd.png
+      output/airplane80_hterrdiffbin_stego_msg128_3of4_floyd.png
+      output/airplane80_hterrdiffbin_stego_msg128_4of4_floyd.png
 
 where each file is a stego image carrying different portions of the payload.
 
