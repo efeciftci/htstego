@@ -82,13 +82,15 @@ Assuming the output directory contains the whole set of images generated with er
 
 Both utilities can also be used via a simple graphical user interface (`htstego-gui.py` and `htstego-extract-gui.py`). For GNU/Linux distributions such as Debian or Ubuntu, `python3-tk` package (and its dependencies) must be installed. For other distributions, please refer to the documentation of the distribution.
 
-![gui_stego](https://github.com/efeciftci/libhtstego/assets/3438150/d9cb1b55-d2b6-49d5-8cdc-cb17721e9000)
-![gui_extract](https://github.com/efeciftci/libhtstego/assets/3438150/67932b48-da5b-4680-bf50-96108589b4a5)
+![gui_stego](https://github.com/efeciftci/libhtstego/assets/3438150/a783c04a-eaf2-4fe6-87a6-cabc725288ed)
+
+![gui_extract](https://github.com/efeciftci/libhtstego/assets/3438150/579a26e1-5e07-4cf2-98b4-b6e61c64e4fd)
 
 
 ## Future
 
 - Ordered dithering method
+- Support for custom error diffusion kernels
 
 ## References
 [1] Yi Yang and Shawn Newsam, "Bag-Of-Visual-Words and Spatial Extensions for Land-Use Classification," ACM SIGSPATIAL International Conference on Advances in Geographic Information Systems (ACM GIS), 2010.
