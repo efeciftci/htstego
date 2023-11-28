@@ -45,6 +45,7 @@ Output Options:
 
 ### Example
 
+      cd src
       ./htstego.py --cover cover_imgs/airplane80.tif --payload payloads/payload128.txt --nshares 4 --htmethod errdiff --errdiffmethod floyd
 
 When executed as above, the following output will be displayed:
@@ -72,6 +73,7 @@ By default, images in `output` directory will be used for extraction but this ca
 
 ### Example
 
+      cd src
       ./htstego-extract.py --htmethod pattern
 
 Assuming the output directory contains the whole set of images generated with error diffusion method, the following output will be produced:
