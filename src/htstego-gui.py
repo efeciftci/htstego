@@ -40,9 +40,9 @@ def update_errdiffmethod_state():
 
 def update_noregularoutput_state():
     if nooutputfiles_var.get() == 0:
-        noregularoutput_check.config(state=tk.NORMAL)
+        regularoutput_check.config(state=tk.NORMAL)
     else:
-        noregularoutput_check.config(state=tk.DISABLED)
+        regularoutput_check.config(state=tk.DISABLED)
 
 
 def browse_cover_image():
