@@ -21,6 +21,7 @@
 import json
 import os.path
 import re
+import zlib
 import xml.dom.minidom as minidom
 from scipy import stats as st
 from skimage import io, metrics
@@ -209,7 +210,11 @@ def htstego_errdiff(NSHARES, coverFile, payloadFile, errdiffmethod, outputMode):
 
     payloadSize = os.path.getsize(payloadFile)
     messageAscii = open(payloadFile).read()
-    messageBinary = ''.join(format(ord(c), '08b') for c in messageAscii)
+    if settings.compress:
+        messageAscii = zlib.compress(bytes(messageAscii.encode('utf-8')))
+        messageBinary = ''.join(format(ord(chr(c)), '08b') for c in messageAscii)
+    else:
+        messageBinary = ''.join(format(ord(c), '08b') for c in messageAscii)
 
     blockSize = M * N // len(messageBinary)
     if blockSize == 0:
@@ -444,8 +449,13 @@ def htstego_errdiff_extract(dirName):
     msg = bytearray()
     for i in range(0, len(bitString), 8):
         msg.append(int(bitString[i:i + 8], 2))
-        
+
     try:
-        return bytes(msg).decode('ascii')
+        return zlib.decompress(bytes(msg)).decode('ascii')
+    except zlib.error:
+        try:
+            return bytes(msg).decode('ascii')
+        except:
+            return 'Cannot extract payload'
     except:
         return 'Cannot extract payload'

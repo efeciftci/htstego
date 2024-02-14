@@ -23,3 +23,4 @@ def init():
     global regularoutput
     global nostdout
     global outputformat
+    global compress

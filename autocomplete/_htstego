@@ -14,7 +14,8 @@ function _htstego.py() {
         '--output-format[output format]::when:(csv json xml)' \
         '--no-output-files[do not produce output images]' \
         '--generate-regular-output[generate nonstego output image]' \
-        '--silent[do not display output on screen]'
+        '--silent[do not display output on screen]' \
+        '--compress[compress payload before embedding]'
         
         return 0
 }

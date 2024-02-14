@@ -62,6 +62,7 @@ def generate_output():
     settings.regularoutput = bool(regularoutput_var.get())
     settings.nostdout = False
     settings.outputformat = outputformat_var.get()
+    settings.compress = compress_var.get()
 
     result_text.delete(1.0, tk.END)
     if htmethod_var.get() == 'errdiff':
@@ -162,6 +163,10 @@ nooutputfiles_check.grid(column=0, row=0, sticky='w')
 regularoutput_var = tk.IntVar()
 regularoutput_check = tk.Checkbutton(options_frame, text='Generate regular output file', variable=regularoutput_var)
 regularoutput_check.grid(column=0, row=1, sticky='w')
+
+compress_var = tk.IntVar()
+compress_check = tk.Checkbutton(options_frame, text='Compress payload before embedding', variable=compress_var)
+compress_check.grid(column=0, row=2, sticky='w')
 
 outputformat_frame = tk.LabelFrame(f, text='Output Format')
 outputformat_frame.grid(column=1, row=3, sticky='wne', padx=5, pady=5)
