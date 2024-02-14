@@ -20,7 +20,6 @@
 
 import json
 import os.path
-import re
 import zlib
 import xml.dom.minidom as minidom
 from scipy import stats as st
