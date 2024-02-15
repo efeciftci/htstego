@@ -300,7 +300,11 @@ def htstego_pattern(NSHARES, coverFile, payloadFile, outputMode):
 
     payloadSize = os.path.getsize(payloadFile)
     messageAscii = open(payloadFile).read()
-    messageBinary = ''.join(format(ord(c), '08b') for c in messageAscii)
+    if settings.compress:
+        messageAscii = zlib.compress(bytes(messageAscii.encode('utf-8')))
+        messageBinary = ''.join(format(ord(chr(c)), '08b') for c in messageAscii)
+    else:
+        messageBinary = ''.join(format(ord(c), '08b') for c in messageAscii)
     messagePos = 1
 
     normalOutput = np.zeros((M * 3, N * 3, C))
@@ -415,7 +419,12 @@ def htstego_pattern_extract(dirName):
         msg.append(int(bitString[i:i + 8], 2))
         
     try:
-        return bytes(msg).decode('ascii')
+        return zlib.decompress(bytes(msg)).decode('ascii')
+    except zlib.error:
+        try:
+            return bytes(msg).decode('ascii')
+        except:
+            return 'Cannot extract payload'
     except:
         return 'Cannot extract payload'
 
