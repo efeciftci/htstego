@@ -1,16 +1,16 @@
 # Halftone Steganography and Extraction Utility
-This is a steganography utility for generating stego images in halftone format and extracting payloads from such generated images. Detailed information about steganography, halftoning and binary images can be accessed from the following Wikipedia pages:
+This is a steganography utility for generating stego images in halftone format and extracting payloads from such generated images. Detailed information about steganography, halftoning, and binary images can be accessed from the following Wikipedia pages:
 
 - [Steganography](https://en.wikipedia.org/wiki/Steganography)
 - [Binary image](https://en.wikipedia.org/wiki/Binary_image)
 - [Digital halftoning](https://en.wikipedia.org/wiki/Halftone#Digital_halftoning)
 
-The utility is designed to work with both color and grayscale images, serving as cover media. During the halftoning procedure, the utility embeds the desired plaintext payload within these images. To enhance security, the embedding process generates multiple output copies, where each copy carries a distinct set of payload bits. This strategy prevents unauthorized extraction attempts from succeeding without the need to gather all the created images. This security measure also brings an added benefit: the extraction algorithm relies only on the stego images themselves. This is in contrast to certain other steganography methods where the original image is required during the extraction process.
+The utility is designed to work with both color and grayscale images, serving as cover media. During the halftoning procedure, the utility embeds the desired plaintext payload within these images. The embedding process generates multiple output copies for enhanced security, each carrying a distinct set of payload bits. This strategy prevents unauthorized extraction attempts from succeeding without the need to gather all the created images. This security measure also brings an added benefit: the extraction algorithm relies only on the stego images, in contrast to specific other steganography methods where the original image is required during the extraction process.
 
-The sample images provided in "cover_imgs" directory are obtained from the "UC Merced Land Use Dataset" [1]. The text files in "payloads" directory are generated randomly using Lorem Ipsum generator [2]. The error diffusion kernels in "kernels" directory belong to Floyd-Steinberg [3], Jarvis-Judice-Ninke [4], and Stucki [5] algorithms. The files presented in these directories are for demonstration purposes only.
+The sample images provided in the "cover_imgs" directory are obtained from the "UC Merced Land Use Dataset" [1]. The text files in the "payloads" directory are generated randomly using Lorem Ipsum generator [2]. The error diffusion kernels in the "kernels" directory belong to Floyd-Steinberg [3], Jarvis-Judice-Ninke [4], and Stucki [5] algorithms. The files presented in these directories are for demonstration purposes only.
 
 ## Setup
-In order to execute, you must have the `numpy`, `scikit-image` and `scipy` packages installed:
+To execute, the `numpy`, `scikit-image`, and `scipy` packages must be installed:
 
     pip install numpy scikit-image scipy
 
@@ -70,25 +70,24 @@ Available options for `htstego-extract.py`:
       --extract-from EXTRACT_FROM         extract from images in this directory
       --htmethod {pattern,errdiff}        halftoning method
 
-By default, images in `output` directory will be used for extraction but this can be overridden with the `--extract-from` option. The specified directory must contain only and only the carrier images. `--htmethod` option must be used to specify which extraction method will be used.
+By default, images in the `output` directory will be used for extraction, but this can be overridden with the `--extract-from` option. The specified directory must contain only and only the carrier images. `--htmethod` option must be used to specify which extraction method will be used.
 
 ### Example
 
       cd src
       ./htstego-extract.py --htmethod pattern
 
-Assuming the output directory contains the whole set of images generated with error diffusion method, the following output will be produced:
+Assuming the output directory contains the whole set of images generated with the error diffusion method, the following output will be produced:
 
       Result: Donec ut mauris sit amet ...
 
 ## Graphical User Interface
 
-Both utilities can also be used via a simple graphical user interface (`htstego-gui.py` and `htstego-extract-gui.py`). For GNU/Linux distributions such as Debian or Ubuntu, `python3-tk` package (and its dependencies) must be installed. For other distributions, please refer to the documentation of the distribution.
+Both utilities can also be used via a simple graphical user interface (`htstego-gui.py` and `htstego-extract-gui.py`). For GNU/Linux distributions such as Debian or Ubuntu, `python3-tk` package (and its dependencies) must be installed. For other distributions, please refer to the distribution documentation.
 
-![gui_stego](https://github.com/efeciftci/libhtstego/assets/3438150/a783c04a-eaf2-4fe6-87a6-cabc725288ed)
+![htstego-gui](https://github.com/efeciftci/htstego/assets/3438150/ff56c0cb-d633-4fb9-90d3-6a29ebc8e32c)
 
-![gui_extract](https://github.com/efeciftci/libhtstego/assets/3438150/579a26e1-5e07-4cf2-98b4-b6e61c64e4fd)
-
+![htstego-extract-gui](https://github.com/efeciftci/htstego/assets/3438150/487b5092-9aae-44f9-acbf-0894a2a89a86)
 
 ## Future
 
