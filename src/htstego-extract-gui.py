@@ -2,8 +2,8 @@
 
 # libhtstego - Halftone Steganography Utility
 #
-# Copyright (C) 2023 by Efe Çiftci <efeciftci@cankaya.edu.tr>
-# Copyright (C) 2023 by Emre Sümer <esumer@baskent.edu.tr>
+# Copyright (C) 2024 by Efe Çiftci <efeciftci@cankaya.edu.tr>
+# Copyright (C) 2024 by Emre Sümer <esumer@baskent.edu.tr>
 # 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
