@@ -45,7 +45,7 @@ if __name__ == '__main__':
     args_output.add_argument('--output-color', type=str, choices=['binary', 'color'], default='binary', help='output color')
     args_output.add_argument('--output-format', default='json', type=str, choices=['csv', 'json', 'xml'], help='output format')
     args_output.add_argument('--silent', action='store_true', help='do not display output on screen')
-    args_output.add_argument('--compress', action='store_true', help='compress payload before embedding')
+    args_output.add_argument('--compress-payload', action='store_true', help='compress payload before embedding')
 
     if len(sys.argv) == 1:
         parser.print_help()
@@ -56,7 +56,7 @@ if __name__ == '__main__':
     settings.regularoutput = args.generate_regular_output if args.generate_regular_output else False
     settings.nostdout = args.silent if args.silent else False
     settings.outputformat = args.output_format if args.output_format else 'json'
-    settings.compress = args.compress if args.compress else False
+    settings.compress = args.compress_payload if args.compress_payload else False
 
     if args.htmethod == 'errdiff' and not args.kernel:
         parser.error('--kernel is required when --htmethod is errdiff')

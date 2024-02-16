@@ -42,7 +42,7 @@ Output Options:
       --output-color {binary,color}       output color
       --output-format {csv,json,xml}      output format
       --silent                            do not display output on screen
-      --compress                          compress payload before embedding
+      --compress-payload                  compress payload before embedding
 
 ### Example
 

@@ -18,7 +18,7 @@ function _htstego.py() {
         '--no-output-files[do not produce output images]' \
         '--generate-regular-output[generate nonstego output image]' \
         '--silent[do not display output on screen]' \
-        '--compress[compress payload before embedding]'
+        '--compress-payload[compress payload before embedding]'
         
     return 0
 }
