@@ -1,0 +1,50 @@
+# autocomplete file for bash
+
+_htstego.py() {
+    local kernels
+    kernels=($(command /bin/ls -1 kernels/*.txt 2>/dev/null | sed 's|.*/||;s|\..*||'))
+
+    local cur prev
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+    case "${prev}" in
+        -h|--help|-v|--version)
+            return 0
+            ;;
+        --htmethod)
+            COMPREPLY=($(compgen -W "pattern errdiff" -- "${cur}"))
+            return 0
+            ;;
+        --output-color)
+            COMPREPLY=($(compgen -W "binary color" -- "${cur}"))
+            return 0
+            ;;
+        --cover|--payload)
+            _filedir
+            return 0
+            ;;
+        --nshares)
+            COMPREPLY=($(compgen -W "number of shares" -- "${cur}"))
+            return 0
+            ;;
+        --kernel)
+            COMPREPLY=($(compgen -W "${kernels[@]}" -- "${cur}"))
+            return 0
+            ;;
+        --output-format)
+            COMPREPLY=($(compgen -W "csv json xml" -- "${cur}"))
+            return 0
+            ;;
+        *)
+            ;;
+    esac
+
+    local options="--htmethod --output-color --cover --payload --nshares --kernel --output-format --no-output-files --generate-regular-output --silent --compress-payload"
+    COMPREPLY=($(compgen -W "${options}" -- "${cur}"))
+
+    return 0
+}
+
+complete -F _htstego.py htstego.py

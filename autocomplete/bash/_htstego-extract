@@ -1,0 +1,31 @@
+# autocomplete file for bash
+
+_htstego-extract.py() {
+    local cur prev
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+    case "${prev}" in
+        -h|--help|-v|--version)
+            return 0
+            ;;
+        --htmethod)
+            COMPREPLY=($(compgen -W "pattern errdiff" -- "${cur}"))
+            return 0
+            ;;
+        --extract-from)
+            _filedir -d
+            return 0
+            ;;
+        *)
+            ;;
+    esac
+
+    local options="--htmethod --extract-from"
+    COMPREPLY=($(compgen -W "${options}" -- "${cur}"))
+
+    return 0
+}
+
+complete -F _htstego-extract.py htstego-extract.py
