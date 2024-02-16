@@ -8,13 +8,13 @@ function _htstego.py() {
     _arguments \
         '(-h --help)'{-h,--help}'[show help message]' \
         '(-v --version)'{-v,--version}'[show program version]' \
-        '--htmethod[halftoning method]::when:(pattern errdiff)' \
-        '--output-color[output color]::when:(binary color)' \
+        '--htmethod[halftoning method]::halftoning method:(pattern errdiff)' \
+        '--output-color[output color]::output color:(binary color)' \
         '--cover[input image]:file:_files' \
         '--payload[input payload]:file:_files' \
-        '--nshares[number of output shares to generate]:nshares' \
+        '--nshares[number of output shares to generate]:number of shares' \
         '--kernel[error diffusion kernel]::kernel:($kernels)' \
-        '--output-format[output format]::when:(csv json xml)' \
+        '--output-format[output format]::output format:(csv json xml)' \
         '--no-output-files[do not produce output images]' \
         '--generate-regular-output[generate nonstego output image]' \
         '--silent[do not display output on screen]' \

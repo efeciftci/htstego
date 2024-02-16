@@ -1,11 +1,11 @@
-#autocomplete file for zsh
+# autocomplete file for zsh
 compdef _htstego-extract.py htstego-extract.py
 
 function _htstego-extract.py() {
     _arguments \
         '(-h --help)'{-h,--help}'[show help message]' \
         '(-v --version)'{-v,--version}'[show program version]' \
-        '--htmethod[halftoning method]::when:(pattern errdiff)' \
+        '--htmethod[halftoning method]::halftoning method:(pattern errdiff)' \
         '--extract-from[extract from images in this directory]:directory:_directories'
         
         return 0
