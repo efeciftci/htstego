@@ -7,7 +7,7 @@ This is a steganography utility for generating stego images in halftone format a
 
 The utility is designed to work with both color and grayscale images, serving as cover media. During the halftoning procedure, the utility embeds the desired plaintext payload within these images. To enhance security, the embedding process generates multiple output copies, where each copy carries a distinct set of payload bits. This strategy prevents unauthorized extraction attempts from succeeding without the need to gather all the created images. This security measure also brings an added benefit: the extraction algorithm relies only on the stego images themselves. This is in contrast to certain other steganography methods where the original image is required during the extraction process.
 
-The sample images provided in "cover_imgs" directory are obtained from the "UC Merced Land Use Dataset" [1]. The text files in "payloads" directory are generated randomly using Lorem Ipsum generator [2]. The files presented in both directories are for demonstration purposes only.
+The sample images provided in "cover_imgs" directory are obtained from the "UC Merced Land Use Dataset" [1]. The text files in "payloads" directory are generated randomly using Lorem Ipsum generator [2]. The error diffusion kernels in "kernels" directory belong to Floyd-Steinberg [3], Jarvis-Judice-Ninke [4], and Stucki [5] algorithms. The files presented in these directories are for demonstration purposes only.
 
 ## Setup
 In order to execute, you must have the `numpy`, `scikit-image` and `scipy` packages installed:
@@ -33,7 +33,7 @@ Required Options:
 
 Error Diffusion Options:
 
-      --errdiffmethod {fan,floyd,jajuni}  error diffusion method
+      --kernel {floyd,jajuni,stucki}      error diffusion kernel (from kernels directory)
 
 Output Options:
 
@@ -93,9 +93,14 @@ Both utilities can also be used via a simple graphical user interface (`htstego-
 ## Future
 
 - Ordered dithering method
-- Support for custom error diffusion kernels
 
 ## References
 [1] Yi Yang and Shawn Newsam, "Bag-Of-Visual-Words and Spatial Extensions for Land-Use Classification," ACM SIGSPATIAL International Conference on Advances in Geographic Information Systems (ACM GIS), 2010.
 
 [2] Lorem Ipsum generator. https://www.lipsum.com/
+
+[3] R.W. Floyd, L. Steinberg, An adaptive algorithm for spatial grey scale. Proceedings of the Society of Information Display 17, 75–77 (1976)
+
+[4] J. F. Jarvis, C. N. Judice and W. H. Ninke, A Survey of Techniques for the Display of Continuous Tone Pictures on Bi-level Displays. Computer Graphics and Image Processing, 5 13–40, 1976.
+
+[5] P. Stucki, MECCA - a multiple error correcting computation algorithm for bi-level image hard copy reproduction. Research report RZ1060, IBM Research Laboratory, Zurich, Switzerland, 1981.

@@ -22,6 +22,7 @@ import json
 import os.path
 import zlib
 import xml.dom.minidom as minidom
+from fractions import Fraction
 from scipy import stats as st
 from skimage import io, metrics
 import numpy as np
@@ -34,83 +35,37 @@ def snr(o, n):
     return 10 * np.log10(ps / pn)
 
 
-def floyd(I):
+def get_kernel_list():
+    kernel_list = []
+    for file in os.listdir('kernels'):
+        if file.endswith('.txt'):
+            kernel_list.append(os.path.splitext(file)[0])
+    return kernel_list
+
+
+def applyErrDiff(I, kernelFile):
+    with open(f'kernels/{kernelFile}.txt', 'r') as file:
+        lines = file.readlines()
+        kernel = [[float(Fraction(value)) if value != 'X' else 0 for value in line.split()] for line in lines]
+    kernel = np.array(kernel)
+    kH, kW = kernel.shape
+    kernel = np.vstack([np.zeros((kW - kH, kW)), kernel])
+    kH, kW = kernel.shape
+
     height, width = I.shape
+    pI = kW // 2
+    tI = np.zeros((height + pI*2, width + pI*2))
+    tI[pI:-pI, pI:-pI] = I
+
     for y in range(height):
         for x in range(width):
-            old_pixel = I[y, x]
+            old_pixel = tI[y+pI, x+pI]
             new_pixel = np.round(old_pixel)
-            I[y, x] = new_pixel
+            tI[y+pI, x+pI] = new_pixel
             err = old_pixel - new_pixel
-
-            if x < width - 1:
-                I[y, x + 1] += err * 7 / 16
-            if y < height - 1:
-                if x > 0:
-                    I[y + 1, x - 1] += err * 3 / 16
-                I[y + 1, x] += err * 5 / 16
-                if x < width - 1:
-                    I[y + 1, x + 1] += err * 1 / 16
-    return I
-
-
-def fan(I):
-    height, width = I.shape
-    for y in range(height):
-        for x in range(width):
-            old_pixel = I[y, x]
-            new_pixel = np.round(old_pixel)
-            I[y, x] = new_pixel
-            err = old_pixel - new_pixel
-
-            if x < width - 1:
-                I[y, x + 1] += err * 7 / 16
-            if y < height - 1:
-                if x > 1:
-                    I[y + 1, x - 2] += err * 1 / 16
-                if x > 0:
-                    I[y + 1, x - 1] = I[y + 1, x - 1] + err * 3 / 16
-                I[y + 1, x] = I[y + 1, x] + err * 5 / 16
-    return I
-
-
-def jajuni(I):
-    height, width = I.shape
-    for y in range(height):
-        for x in range(width):
-            old_pixel = I[y, x]
-            new_pixel = round(I[y, x])
-            I[y, x] = new_pixel
-            err = old_pixel - new_pixel
-
-            if x + 1 < width:
-                I[y, x + 1] = I[y, x + 1] + err * 7 / 48
-            if x + 2 < width:
-                I[y, x + 2] = I[y, x + 2] + err * 5 / 48
-
-            if y + 1 < height:
-                if x - 2 >= 0:
-                    I[y + 1, x - 2] = I[y + 1, x - 2] + err * 3 / 48
-                if x - 1 >= 0:
-                    I[y + 1, x - 1] = I[y + 1, x - 1] + err * 5 / 48
-                I[y + 1, x] = I[y + 1, x] + err * 7 / 48
-                if x + 1 < width:
-                    I[y + 1, x + 1] = I[y + 1, x + 1] + err * 5 / 48
-                if x + 2 < width:
-                    I[y + 1, x + 2] = I[y + 1, x + 2] + err * 3 / 48
-
-            if y + 2 < height:
-                if x - 2 >= 0:
-                    I[y + 2, x - 2] = I[y + 2, x - 2] + err * 1 / 48
-                if x - 1 >= 0:
-                    I[y + 2, x - 1] = I[y + 2, x - 1] + err * 3 / 48
-                I[y + 2, x] = I[y + 2, x] + err * 5 / 48
-                if x + 1 < width:
-                    I[y + 2, x + 1] = I[y + 2, x + 1] + err * 3 / 48
-                if x + 2 < width:
-                    I[y + 2, x + 2] = I[y + 2, x + 2] + err * 1 / 48
-
-    return I
+            tI[y:y+kH, x:x+kW] += err * kernel
+            
+    return tI[pI:-pI, pI:-pI]
 
 
 def findEmbedPositionErrDiff(currentSet, stegoPixel):
@@ -193,9 +148,7 @@ def output_formatter(params, output_format):
     return output
 
 
-def htstego_errdiff(NSHARES, coverFile, payloadFile, errdiffmethod, outputMode):
-    errdifffun = globals().get(errdiffmethod)
-
+def htstego_errdiff(NSHARES, coverFile, payloadFile, errDiffMethod, outputMode):
     if outputMode == 'binary':
         I = io.imread(coverFile, as_gray=True)
         I = np.expand_dims(I, axis=-1)
@@ -225,7 +178,7 @@ def htstego_errdiff(NSHARES, coverFile, payloadFile, errdiffmethod, outputMode):
     linearStegoImages = np.zeros((NSHARES, M * N, C))
 
     for i in range(C):
-        normalOutput[:, :, i] = errdifffun(I[:, :, i])
+        normalOutput[:, :, i] = applyErrDiff(I[:, :, i], errDiffMethod)
         linearImage[:, i] = normalOutput[:, :, i].reshape(1, -1)[0]
         for j in range(NSHARES):
             linearStegoImages[j, :, i] = linearImage[:, i]
@@ -265,7 +218,7 @@ def htstego_errdiff(NSHARES, coverFile, payloadFile, errdiffmethod, outputMode):
             os.makedirs('output')
         imfile = os.path.basename(coverFile).rsplit('.', 1)[0]
         if settings.regularoutput == True:
-            normalOutputPath = f'output/{imfile}_hterrdiff{outputMode[:3]}_regular_{errdiffmethod}.png'
+            normalOutputPath = f'output/{imfile}_hterrdiff{outputMode[:3]}_regular_{errDiffMethod}.png'
             io.imsave(normalOutputPath, normalOutput)
         stegoOutputPaths = []
 
@@ -276,7 +229,7 @@ def htstego_errdiff(NSHARES, coverFile, payloadFile, errdiffmethod, outputMode):
         if outputMode == 'binary':
             stegoImage = stegoImage[:, :, 0]
         if settings.nofileout == False:
-            stegoOutputPaths.append(f'output/{imfile}_hterrdiff{outputMode[:3]}_stego_msg{payloadSize}_{i+1}of{NSHARES}_{errdiffmethod}.png')
+            stegoOutputPaths.append(f'output/{imfile}_hterrdiff{outputMode[:3]}_stego_msg{payloadSize}_{i+1}of{NSHARES}_{errDiffMethod}.png')
             io.imsave(stegoOutputPaths[i], stegoImage)
 
         cA = None if len(stegoImage.shape) == 2 else 2

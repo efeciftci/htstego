@@ -19,7 +19,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import settings
-from libhtstego import htstego_errdiff, htstego_pattern, output_formatter
+from libhtstego import htstego_errdiff, htstego_pattern, output_formatter, get_kernel_list
 import tkinter as tk
 from tkinter import filedialog, ttk
 
@@ -29,13 +29,9 @@ settings.init()
 
 def update_errdiffmethod_state():
     if htmethod_var.get() == 'errdiff':
-        errdiffmethod_fan.config(state=tk.NORMAL)
-        errdiffmethod_floyd.config(state=tk.NORMAL)
-        errdiffmethod_jajuni.config(state=tk.NORMAL)
+        errdiffmethod_drop.config(state=tk.NORMAL)
     else:
-        errdiffmethod_fan.config(state=tk.DISABLED)
-        errdiffmethod_floyd.config(state=tk.DISABLED)
-        errdiffmethod_jajuni.config(state=tk.DISABLED)
+        errdiffmethod_drop.config(state=tk.DISABLED)
 
 
 def update_noregularoutput_state():
@@ -66,7 +62,7 @@ def generate_output():
 
     result_text.delete(1.0, tk.END)
     if htmethod_var.get() == 'errdiff':
-        ret_msg, avg_snr, avg_psnr, avg_ssim = htstego_errdiff(NSHARES=int(nshares_entry.get()), coverFile=cover_entry.get(), payloadFile=payload_entry.get(), errdiffmethod=errdiffmethod_var.get(), outputMode=outputmode_var.get())
+        ret_msg, avg_snr, avg_psnr, avg_ssim = htstego_errdiff(NSHARES=int(nshares_entry.get()), coverFile=cover_entry.get(), payloadFile=payload_entry.get(), errDiffMethod=errdiffmethod_var.get(), outputMode=outputmode_var.get())
     else:
         ret_msg, avg_snr, avg_psnr, avg_ssim = htstego_pattern(NSHARES=int(nshares_entry.get()), coverFile=cover_entry.get(), payloadFile=payload_entry.get(), outputMode=outputmode_var.get())
     params = {
@@ -105,17 +101,13 @@ htmethod_pattern_radio.grid(column=1, row=0)
 errdiffmethod_frame = tk.LabelFrame(f, text='Error Diffusion Method')
 errdiffmethod_frame.grid(column=1, row=0, sticky='we', padx=5, pady=5)
 
+errdiff_kernels = get_kernel_list()
+
 errdiffmethod_var = tk.StringVar()
-errdiffmethod_var.set('fan')
+errdiffmethod_var.set(errdiff_kernels[0])
 
-errdiffmethod_fan = tk.Radiobutton(errdiffmethod_frame, text='Fan', variable=errdiffmethod_var, value='fan')
-errdiffmethod_fan.grid(column=0, row=0)
-
-errdiffmethod_floyd = tk.Radiobutton(errdiffmethod_frame, text='Floyd', variable=errdiffmethod_var, value='floyd')
-errdiffmethod_floyd.grid(column=1, row=0)
-
-errdiffmethod_jajuni = tk.Radiobutton(errdiffmethod_frame, text='JaJuNi', variable=errdiffmethod_var, value='jajuni')
-errdiffmethod_jajuni.grid(column=2, row=0)
+errdiffmethod_drop = tk.OptionMenu(errdiffmethod_frame, errdiffmethod_var, *errdiff_kernels)
+errdiffmethod_drop.grid(column=0, row=0)
 
 output_mode_frame = tk.LabelFrame(f, text='Output Mode')
 output_mode_frame.grid(column=0, row=1, sticky='we', padx=5, pady=5)

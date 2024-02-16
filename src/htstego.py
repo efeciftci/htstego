@@ -21,7 +21,7 @@
 import argparse
 import sys
 import settings
-from libhtstego import htstego_errdiff, htstego_pattern, output_formatter
+from libhtstego import htstego_errdiff, htstego_pattern, output_formatter, get_kernel_list
 
 __version__ = '1.0'
 settings.init()
@@ -37,7 +37,7 @@ if __name__ == '__main__':
     args_required.add_argument('--nshares', type=int, required=True, help='number of output shares to generate')
 
     args_errdiff = parser.add_argument_group('Error Diffusion Options')
-    args_errdiff.add_argument('--errdiffmethod', type=str, choices=['fan', 'floyd', 'jajuni'], help='error diffusion method')
+    args_errdiff.add_argument('--kernel', type=str, choices=get_kernel_list(), help='error diffusion kernel (from kernels directory)')
 
     args_output = parser.add_argument_group('Output Options')
     args_output.add_argument('--no-output-files', action='store_true', help='do not produce output images')
@@ -58,12 +58,12 @@ if __name__ == '__main__':
     settings.outputformat = args.output_format if args.output_format else 'json'
     settings.compress = args.compress if args.compress else False
 
-    if args.htmethod == 'errdiff' and not args.errdiffmethod:
-        parser.error('--errdiffmethod is required when --htmethod is errdiff')
+    if args.htmethod == 'errdiff' and not args.kernel:
+        parser.error('--kernel is required when --htmethod is errdiff')
         sys.exit(1)
 
     if args.htmethod == 'errdiff':
-        ret_msg, avg_snr, avg_psnr, avg_ssim = htstego_errdiff(NSHARES=args.nshares, coverFile=args.cover, payloadFile=args.payload, errdiffmethod=args.errdiffmethod, outputMode=args.output_color)
+        ret_msg, avg_snr, avg_psnr, avg_ssim = htstego_errdiff(NSHARES=args.nshares, coverFile=args.cover, payloadFile=args.payload, errDiffMethod=args.kernel, outputMode=args.output_color)
     elif args.htmethod == 'pattern':
         ret_msg, avg_snr, avg_psnr, avg_ssim = htstego_pattern(NSHARES=args.nshares, coverFile=args.cover, payloadFile=args.payload, outputMode=args.output_color)
 
