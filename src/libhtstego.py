@@ -49,8 +49,6 @@ def applyErrDiff(I, kernelFile):
         kernel = [[float(Fraction(value)) if value != 'X' else 0 for value in line.split()] for line in lines]
     kernel = np.array(kernel)
     kH, kW = kernel.shape
-    kernel = np.vstack([np.zeros((kW - kH, kW)), kernel])
-    kH, kW = kernel.shape
 
     height, width = I.shape
     pI = kW // 2
