@@ -68,10 +68,12 @@ def generate_output():
     params = {
         'status': ret_msg,
         'halftoning_method': htmethod_var.get(),
+        'errdiff_kernel': errdiffmethod_var.get() if htmethod_var.get() == 'errdiff' else 'N/A',
         'output_mode': outputmode_var.get(),
         'number_of_shares': nshares_entry.get(),
         'cover_file': cover_entry.get(),
         'payload_file': payload_entry.get(),
+        'payload_compression': settings.compress,
         'avg_snr': round(avg_snr, 4),
         'avg_psnr': round(avg_psnr, 4),
         'avg_ssim': round(avg_ssim, 4)

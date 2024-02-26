@@ -71,10 +71,12 @@ if __name__ == '__main__':
         params = {
             'status': ret_msg,
             'halftoning_method': args.htmethod,
+            'errdiff_kernel': args.kernel if args.htmethod == 'errdiff' else 'N/A',
             'output_color': args.output_color,
             'number_of_shares': args.nshares,
             'cover_file': args.cover,
             'payload_file': args.payload,
+            'payload_compression': settings.compress,
             'avg_snr': round(avg_snr, 4),
             'avg_psnr': round(avg_psnr, 4),
             'avg_ssim': round(avg_ssim, 4)
