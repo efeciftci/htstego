@@ -21,37 +21,41 @@ or
 ## Payload Hiding
 Available options for `htstego.py`:
 
-      -h, --help                          show this help message and exit
-      -v, --version                       show program's version number and exit
+      -h, --help                            show this help message and exit
+      -v, --version                         show program's version number and exit
 
 Required Options:
 
-      --htmethod {pattern,errdiff}        halftoning method
-      --cover COVER                       input image
-      --payload PAYLOAD                   input payload
-      --nshares NSHARES                   number of output shares to generate
+      --htmethod {errdiff,ordered,pattern}  halftoning method
+      --cover COVER                         input image
+      --payload PAYLOAD                     input payload
+      --nshares NSHARES                     number of output shares to generate
 
 Error Diffusion Options:
 
-      --kernel {floyd,jajuni,stucki}      error diffusion kernel (from kernels directory)
+      --kernel {stucki,floyd,jajuni}        error diffusion kernel (from kernels directory)
+
+Ordered Dithering Options:
+
+      --bayer-size {2,4,8}                  Bayer matrix size
 
 Output Options:
 
-      --no-output-files                   do not produce output images
-      --generate-regular-output           generate nonstego output image
-      --output-color {binary,color}       output color
-      --output-format {csv,json,xml}      output format
-      --silent                            do not display output on screen
-      --compress-payload                  compress payload before embedding
+      --no-output-files                     do not produce output images
+      --generate-regular-output             generate nonstego output image
+      --output-color {binary,color}         output color
+      --output-format {csv,json,xml}        output format
+      --silent                              do not display output on screen
+      --compress-payload                    compress payload before embedding
 
 ### Example
 
       cd src
-      ./htstego.py --cover cover_imgs/airplane80.tif --payload payloads/payload128.txt --nshares 4 --htmethod errdiff --errdiffmethod floyd
+      ./htstego.py --cover cover_imgs/airplane80.tif --payload payloads/payload128.txt --nshares 4 --htmethod errdiff --kernel floyd
 
 When executed as above, the following output will be displayed:
 
-      {"status": "ok", "halftoning_method": "errdiff", "output_color": "binary", "number_of_shares": 4, "cover_file": "cover_imgs/airplane80.tif", "payload_file": "payloads/payload128.txt", "avg_snr": 21.8902, "avg_psnr": 24.0846, "avg_ssim": 0.9915}
+      {"status": "ok", "halftoning_method": "errdiff", "errdiff_kernel": "floyd", "bayer_size": "N/A", "output_color": "binary", "number_of_shares": 4, "cover_file": "cover_imgs/airplane80.tif", "payload_file": "payloads/payload128.txt", "payload_compression": false, "avg_snr": 21.8918, "avg_psnr": 24.0863, "avg_ssim": 0.9916}
 
 and the following files will be created:
 
@@ -65,10 +69,10 @@ where each file is a stego image carrying different portions of the payload.
 ## Payload Extraction
 Available options for `htstego-extract.py`:
 
-      -h, --help                          show this help message and exit
-      -v, --version                       show program's version number and exit
-      --extract-from EXTRACT_FROM         extract from images in this directory
-      --htmethod {pattern,errdiff}        halftoning method
+      -h, --help                            show this help message and exit
+      -v, --version                         show program's version number and exit
+      --extract-from EXTRACT_FROM           extract from images in this directory
+      --htmethod {errdiff,ordered,pattern}  halftoning method
 
 By default, images in the `output` directory will be used for extraction, but this can be overridden with the `--extract-from` option. The specified directory must contain only and only the carrier images. `--htmethod` option must be used to specify which extraction method will be used.
 
@@ -89,9 +93,6 @@ Both utilities can also be used via a simple graphical user interface (`htstego-
 
 ![htstego-extract-gui](https://github.com/efeciftci/htstego/assets/3438150/487b5092-9aae-44f9-acbf-0894a2a89a86)
 
-## Future
-
-- Ordered dithering method
 
 ## References
 [1] Yi Yang and Shawn Newsam, "Bag-Of-Visual-Words and Spatial Extensions for Land-Use Classification," ACM SIGSPATIAL International Conference on Advances in Geographic Information Systems (ACM GIS), 2010.

@@ -66,6 +66,15 @@ def applyErrDiff(I, kernelFile):
     return tI[pI:-pI, pI:-pI]
 
 
+def generateBayerMatrix(n):
+    if n == 1:
+        return np.array([[0]])
+    m = 4 * n * n * generateBayerMatrix(n / 2)
+    top = np.hstack((m, m + 3))
+    bottom = np.hstack((m + 2, m + 1))
+    return np.vstack((top, bottom)) / (4 * n * n)
+
+
 def findEmbedPositionErrDiff(currentSet, stegoPixel):
     currentSet = np.ravel(currentSet)
     if (stegoPixel == 0 and np.all(currentSet == 0)) or (stegoPixel == 1 and np.all(currentSet == 1)):
@@ -241,6 +250,87 @@ def htstego_errdiff(NSHARES, coverFile, payloadFile, errDiffMethod, outputMode):
     return 'ok', avg_snr, avg_psnr, avg_ssim
 
 
+def htstego_ordered(NSHARES, coverFile, payloadFile, bayerN, outputMode):
+    if outputMode == 'binary':
+        I = io.imread(coverFile, as_gray=True)
+        I = np.expand_dims(I, axis=-1)
+    else:
+        I = io.imread(coverFile) / 255.0
+
+    if outputMode == 'color' and len(I.shape) < 3:
+        return 'cannot generate color output from grayscale input', 0, 0, 0
+
+    M, N, C = I.shape
+
+    payloadSize = os.path.getsize(payloadFile)
+    messageAscii = open(payloadFile).read()
+    if settings.compress:
+        messageAscii = zlib.compress(bytes(messageAscii.encode('utf-8')))
+        messageBinary = ''.join(format(ord(chr(c)), '08b') for c in messageAscii)
+    else:
+        messageBinary = ''.join(format(ord(c), '08b') for c in messageAscii)
+
+    blockSize = M * N // len(messageBinary)
+    if blockSize == 0:
+        return 'payload too long', 0, 0, 0
+
+    normalOutput = np.zeros((M, N, C), dtype=np.uint8)
+    stegoOutputs = np.zeros((NSHARES, M, N, C), dtype=np.uint8)
+    results = np.zeros((NSHARES, 3))
+
+    bM = np.multiply(generateBayerMatrix(bayerN), 4)
+    bitIndex = 0
+    randPos = np.random.randint(0, NSHARES)
+
+    for y in range(M):
+        for x in range(N):
+            cP = N * y + x
+            threshold = bM[x % bayerN][y % bayerN]
+            for z in range(C):
+                newPixel = 255 if I[y, x, z] > threshold else 0
+                normalOutput[y, x, z] = newPixel
+                stegoOutputs[:, y, x, z] = newPixel
+
+            if bitIndex < len(messageBinary):
+                if cP % blockSize == randPos and cP // blockSize == bitIndex:
+                    sP = 255 if messageBinary[bitIndex] == '1' else 0
+                    rC = np.random.randint(0, C)
+                    rO = np.random.randint(0, NSHARES)
+                    stegoOutputs[:, y, x, rC] = np.where(np.arange(NSHARES) == rO, sP, 255 - sP)
+                    bitIndex += 1
+                    randPos = np.random.randint(0, blockSize)
+
+    if outputMode == 'binary':
+        normalOutput = normalOutput[:, :, 0]
+
+    if settings.nofileout == False:
+        if not os.path.exists('output'):
+            os.makedirs('output')
+        imfile = os.path.basename(coverFile).rsplit('.', 1)[0]
+        if settings.regularoutput == True:
+            normalOutputPath = f'output/{imfile}_htordered{outputMode[:3]}_regular_bayer{bayerN}.png'
+            io.imsave(normalOutputPath, normalOutput)
+        stegoOutputPaths = []
+
+    for i in range(NSHARES):
+        stegoImage = stegoOutputs[i]
+        if outputMode == 'binary':
+            stegoImage = stegoImage[:, :, 0]
+        if settings.nofileout == False:
+            stegoOutputPaths.append(f'output/{imfile}_htordered{outputMode[:3]}_stego_msg{payloadSize}_{i+1}of{NSHARES}_bayer{bayerN}.png')
+            io.imsave(stegoOutputPaths[i], stegoImage)
+
+        cA = None if len(stegoImage.shape) == 2 else 2
+        results[i, 0] = snr(normalOutput, stegoImage)
+        results[i, 1] = metrics.peak_signal_noise_ratio(stegoImage, normalOutput)
+        results[i, 2] = metrics.structural_similarity(stegoImage, normalOutput, channel_axis=cA)
+
+    avg_snr = np.mean(results[:, 0])
+    avg_psnr = np.mean(results[:, 1])
+    avg_ssim = np.mean(results[:, 2])
+    return 'ok', avg_snr, avg_psnr, avg_ssim
+
+
 def htstego_pattern(NSHARES, coverFile, payloadFile, outputMode):
     if outputMode == 'binary':
         I = (io.imread(coverFile, as_gray=True) * 255).astype(np.uint8) // 26
@@ -399,6 +489,46 @@ def htstego_errdiff_extract(dirName):
         for j in range(N):
             for k in range(C):
                 pVal = [image[i, j, k] for image in images]
+                if len(set(pVal)) > 1:
+                    for v in set(pVal):
+                        if pVal.count(v) == 1:
+                            bitString += '0' if v == 0 else '1'
+                            break
+
+    msg = bytearray()
+    for i in range(0, len(bitString), 8):
+        msg.append(int(bitString[i:i + 8], 2))
+
+    try:
+        return zlib.decompress(bytes(msg)).decode('ascii')
+    except zlib.error:
+        try:
+            return bytes(msg).decode('ascii')
+        except:
+            return 'Cannot extract payload'
+    except:
+        return 'Cannot extract payload'
+
+
+def htstego_ordered_extract(dirName):
+    if not os.path.exists(dirName):
+        return
+
+    carrierFiles = [file for file in os.listdir(dirName) if file.endswith('.png')]
+    images = []
+    for carrier in carrierFiles:
+        I = io.imread(f'{dirName}/{carrier}')
+        if len(I.shape) == 2:
+            I = np.expand_dims(I, axis=-1)
+        images.append(I)
+    M, N, C = images[0].shape
+
+    bitString = ''
+
+    for y in range(M):
+        for x in range(N):
+            for k in range(C):
+                pVal = [image[y, x, k] for image in images]
                 if len(set(pVal)) > 1:
                     for v in set(pVal):
                         if pVal.count(v) == 1:

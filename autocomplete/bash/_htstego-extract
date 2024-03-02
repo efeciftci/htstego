@@ -11,7 +11,7 @@ _htstego-extract.py() {
             return 0
             ;;
         --htmethod)
-            COMPREPLY=($(compgen -W "pattern errdiff" -- "${cur}"))
+            COMPREPLY=($(compgen -W "errdiff ordered pattern" -- "${cur}"))
             return 0
             ;;
         --extract-from)

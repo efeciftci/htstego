@@ -18,7 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from libhtstego import htstego_errdiff_extract, htstego_pattern_extract
+from libhtstego import htstego_errdiff_extract, htstego_ordered_extract, htstego_pattern_extract
 import tkinter as tk
 from tkinter import filedialog, ttk
 
@@ -33,7 +33,12 @@ def browse_output():
 
 def generate_output():
     result_text.delete(1.0, tk.END)
-    msg = htstego_errdiff_extract(output_entry.get()) if htmethod_var.get() == 'errdiff' else htstego_pattern_extract(output_entry.get())
+    if htmethod_var.get() == 'errdiff':
+        msg = htstego_errdiff_extract(output_entry.get())
+    elif htmethod_var.get() == 'ordered':
+        msg = htstego_ordered_extract(output_entry.get())
+    elif htmethod_var.get() == 'pattern':
+        msg = htstego_pattern_extract(output_entry.get())
     result_text.insert(tk.END, msg)
 
 
@@ -42,7 +47,7 @@ w.title('Halftone Steganography Extraction Tool')
 w.resizable(False, False)
 
 f = tk.Frame(w)
-f.grid(padx=5,sticky='we')
+f.grid(padx=5, sticky='we')
 
 htmethod_frame = ttk.LabelFrame(f, text='Halftone Method')
 htmethod_frame.grid(column=0, row=0, sticky='we', padx=5, pady=5)
@@ -53,8 +58,11 @@ htmethod_var.set('errdiff')
 htmethod_errdiff_radio = tk.Radiobutton(htmethod_frame, text='Error Diffusion', variable=htmethod_var, value='errdiff')
 htmethod_errdiff_radio.grid(column=0, row=0)
 
+htmethod_ordered_radio = tk.Radiobutton(htmethod_frame, text='Ordered Dithering', variable=htmethod_var, value='ordered')
+htmethod_ordered_radio.grid(column=1, row=0)
+
 htmethod_pattern_radio = tk.Radiobutton(htmethod_frame, text='Pattern', variable=htmethod_var, value='pattern')
-htmethod_pattern_radio.grid(column=1, row=0)
+htmethod_pattern_radio.grid(column=2, row=0)
 
 output_frame = tk.LabelFrame(f, text='Output Directory')
 output_frame.grid(column=1, row=0, sticky='we', padx=5, pady=5)

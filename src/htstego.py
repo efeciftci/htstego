@@ -21,7 +21,7 @@
 import argparse
 import sys
 import settings
-from libhtstego import htstego_errdiff, htstego_pattern, output_formatter, get_kernel_list
+from libhtstego import get_kernel_list, htstego_errdiff, htstego_ordered, htstego_pattern, output_formatter
 
 __version__ = '1.0'
 settings.init()
@@ -31,13 +31,16 @@ if __name__ == '__main__':
     parser.add_argument('-v', '--version', action='version', version=f'%(prog)s {__version__}')
 
     args_required = parser.add_argument_group('Required Options')
-    args_required.add_argument('--htmethod', type=str, required=True, choices=['pattern', 'errdiff'], help='halftoning method')
+    args_required.add_argument('--htmethod', type=str, required=True, choices=['errdiff', 'ordered', 'pattern'], help='halftoning method')
     args_required.add_argument('--cover', type=str, required=True, help='input image')
     args_required.add_argument('--payload', type=str, required=True, help='input payload')
     args_required.add_argument('--nshares', type=int, required=True, help='number of output shares to generate')
 
     args_errdiff = parser.add_argument_group('Error Diffusion Options')
     args_errdiff.add_argument('--kernel', type=str, choices=get_kernel_list(), help='error diffusion kernel (from kernels directory)')
+
+    args_ordered = parser.add_argument_group('Ordered Dithering Options')
+    args_ordered.add_argument('--bayer-size', type=int, choices=[2, 4, 8], default=8, help='Bayer matrix size')
 
     args_output = parser.add_argument_group('Output Options')
     args_output.add_argument('--no-output-files', action='store_true', help='do not produce output images')
@@ -62,8 +65,14 @@ if __name__ == '__main__':
         parser.error('--kernel is required when --htmethod is errdiff')
         sys.exit(1)
 
+    if args.htmethod == 'ordered' and not args.bayer_size:
+        parser.error('--bayer-size is required when --htmethod is ordered')
+        sys.exit(1)
+
     if args.htmethod == 'errdiff':
         ret_msg, avg_snr, avg_psnr, avg_ssim = htstego_errdiff(NSHARES=args.nshares, coverFile=args.cover, payloadFile=args.payload, errDiffMethod=args.kernel, outputMode=args.output_color)
+    elif args.htmethod == 'ordered':
+        ret_msg, avg_snr, avg_psnr, avg_ssim = htstego_ordered(NSHARES=args.nshares, coverFile=args.cover, payloadFile=args.payload, bayerN=args.bayer_size, outputMode=args.output_color)
     elif args.htmethod == 'pattern':
         ret_msg, avg_snr, avg_psnr, avg_ssim = htstego_pattern(NSHARES=args.nshares, coverFile=args.cover, payloadFile=args.payload, outputMode=args.output_color)
 
@@ -72,6 +81,7 @@ if __name__ == '__main__':
             'status': ret_msg,
             'halftoning_method': args.htmethod,
             'errdiff_kernel': args.kernel if args.htmethod == 'errdiff' else 'N/A',
+            'bayer_size': args.bayer_size if args.htmethod == 'ordered' else 'N/A',
             'output_color': args.output_color,
             'number_of_shares': args.nshares,
             'cover_file': args.cover,

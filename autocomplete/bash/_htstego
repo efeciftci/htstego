@@ -1,7 +1,8 @@
 # autocomplete file for bash
 
 _htstego.py() {
-    local kernels
+    local bayersizes kernels
+    bayersizes=(2 4 8)
     kernels=($(command /bin/ls -1 kernels/*.txt 2>/dev/null | sed 's|.*/||;s|\..*||'))
 
     local cur prev
@@ -14,7 +15,7 @@ _htstego.py() {
             return 0
             ;;
         --htmethod)
-            COMPREPLY=($(compgen -W "pattern errdiff" -- "${cur}"))
+            COMPREPLY=($(compgen -W "errdiff ordered pattern" -- "${cur}"))
             return 0
             ;;
         --output-color)
@@ -29,6 +30,10 @@ _htstego.py() {
             COMPREPLY=($(compgen -W "number of shares" -- "${cur}"))
             return 0
             ;;
+        --bayer-size)
+            COMPREPLY=($(compgen -W "2 4 8" -- "${cur}"))
+            return 0
+            ;;
         --kernel)
             COMPREPLY=($(compgen -W "${kernels[@]}" -- "${cur}"))
             return 0
@@ -41,7 +46,7 @@ _htstego.py() {
             ;;
     esac
 
-    local options="--htmethod --output-color --cover --payload --nshares --kernel --output-format --no-output-files --generate-regular-output --silent --compress-payload"
+    local options="--htmethod --output-color --cover --payload --nshares --kernel --bayer-size --output-format --no-output-files --generate-regular-output --silent --compress-payload"
     COMPREPLY=($(compgen -W "${options}" -- "${cur}"))
 
     return 0

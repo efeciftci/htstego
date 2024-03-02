@@ -19,7 +19,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import settings
-from libhtstego import htstego_errdiff, htstego_pattern, output_formatter, get_kernel_list
+from libhtstego import get_kernel_list, htstego_errdiff, htstego_ordered, htstego_pattern, output_formatter
 import tkinter as tk
 from tkinter import filedialog, ttk
 
@@ -27,11 +27,16 @@ __version__ = '1.0'
 settings.init()
 
 
-def update_errdiffmethod_state():
+def update_htmethod_state():
     if htmethod_var.get() == 'errdiff':
         errdiffmethod_drop.config(state=tk.NORMAL)
-    else:
+        bayersize_drop.config(state=tk.DISABLED)
+    if htmethod_var.get() == 'ordered':
         errdiffmethod_drop.config(state=tk.DISABLED)
+        bayersize_drop.config(state=tk.NORMAL)
+    if htmethod_var.get() == 'pattern':
+        errdiffmethod_drop.config(state=tk.DISABLED)
+        bayersize_drop.config(state=tk.DISABLED)
 
 
 def update_noregularoutput_state():
@@ -63,12 +68,15 @@ def generate_output():
     result_text.delete(1.0, tk.END)
     if htmethod_var.get() == 'errdiff':
         ret_msg, avg_snr, avg_psnr, avg_ssim = htstego_errdiff(NSHARES=int(nshares_entry.get()), coverFile=cover_entry.get(), payloadFile=payload_entry.get(), errDiffMethod=errdiffmethod_var.get(), outputMode=outputmode_var.get())
+    elif htmethod_var.get() == 'ordered':
+        ret_msg, avg_snr, avg_psnr, avg_ssim = htstego_ordered(NSHARES=int(nshares_entry.get()), coverFile=cover_entry.get(), payloadFile=payload_entry.get(), bayerN=int(bayersize_var.get()), outputMode=outputmode_var.get())
     else:
         ret_msg, avg_snr, avg_psnr, avg_ssim = htstego_pattern(NSHARES=int(nshares_entry.get()), coverFile=cover_entry.get(), payloadFile=payload_entry.get(), outputMode=outputmode_var.get())
     params = {
         'status': ret_msg,
         'halftoning_method': htmethod_var.get(),
         'errdiff_kernel': errdiffmethod_var.get() if htmethod_var.get() == 'errdiff' else 'N/A',
+        'bayer_size': bayersize_var.get() if htmethod_var.get() == 'ordered' else 'N/A',
         'output_mode': outputmode_var.get(),
         'number_of_shares': nshares_entry.get(),
         'cover_file': cover_entry.get(),
@@ -94,11 +102,14 @@ htmethod_frame.grid(column=0, row=0, sticky='we', padx=5, pady=5)
 htmethod_var = tk.StringVar()
 htmethod_var.set('errdiff')
 
-htmethod_errdiff_radio = tk.Radiobutton(htmethod_frame, text='Error Diffusion', variable=htmethod_var, value='errdiff', command=update_errdiffmethod_state)
+htmethod_errdiff_radio = tk.Radiobutton(htmethod_frame, text='Error Diffusion', variable=htmethod_var, value='errdiff', command=update_htmethod_state)
 htmethod_errdiff_radio.grid(column=0, row=0)
 
-htmethod_pattern_radio = tk.Radiobutton(htmethod_frame, text='Pattern', variable=htmethod_var, value='pattern', command=update_errdiffmethod_state)
+htmethod_pattern_radio = tk.Radiobutton(htmethod_frame, text='Ordered Dithering', variable=htmethod_var, value='ordered', command=update_htmethod_state)
 htmethod_pattern_radio.grid(column=1, row=0)
+
+htmethod_pattern_radio = tk.Radiobutton(htmethod_frame, text='Pattern', variable=htmethod_var, value='pattern', command=update_htmethod_state)
+htmethod_pattern_radio.grid(column=2, row=0)
 
 errdiffmethod_frame = tk.LabelFrame(f, text='Error Diffusion Method')
 errdiffmethod_frame.grid(column=1, row=0, sticky='we', padx=5, pady=5)
@@ -148,7 +159,7 @@ payload_button = tk.Button(payload_frame, text='Browse...', command=browse_paylo
 payload_button.pack(side=tk.RIGHT)
 
 options_frame = tk.LabelFrame(f, text='Options')
-options_frame.grid(column=0, row=3, sticky='we', padx=5, pady=5)
+options_frame.grid(column=0, row=3, sticky='we', padx=5, pady=5, rowspan=2)
 
 nooutputfiles_var = tk.IntVar()
 nooutputfiles_check = tk.Checkbutton(options_frame, text='Do not generate output files', variable=nooutputfiles_var, command=update_noregularoutput_state)
@@ -162,8 +173,20 @@ compress_var = tk.IntVar()
 compress_check = tk.Checkbutton(options_frame, text='Compress payload before embedding', variable=compress_var)
 compress_check.grid(column=0, row=2, sticky='w')
 
+ordered_frame = tk.LabelFrame(f, text='Ordered Dithering Bayer Matrix Size')
+ordered_frame.grid(column=1, row=3, sticky='wne', padx=5, pady=5)
+
+bayersizes = [2, 4, 8]
+
+bayersize_var = tk.StringVar()
+bayersize_var.set(8)
+
+bayersize_drop = tk.OptionMenu(ordered_frame, bayersize_var, *bayersizes)
+bayersize_drop.grid(column=0, row=0)
+bayersize_drop.config(state=tk.DISABLED)
+
 outputformat_frame = tk.LabelFrame(f, text='Output Format')
-outputformat_frame.grid(column=1, row=3, sticky='wne', padx=5, pady=5)
+outputformat_frame.grid(column=1, row=4, sticky='wne', padx=5, pady=5)
 
 outputformat_var = tk.StringVar()
 outputformat_var.set('json')
