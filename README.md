@@ -89,10 +89,9 @@ Assuming the output directory contains the whole set of images generated with th
 
 Both utilities can also be used via a simple graphical user interface (`htstego-gui.py` and `htstego-extract-gui.py`). For GNU/Linux distributions such as Debian or Ubuntu, `python3-tk` package (and its dependencies) must be installed. For other distributions, please refer to the distribution documentation.
 
-![htstego-gui](https://github.com/efeciftci/htstego/assets/3438150/ff56c0cb-d633-4fb9-90d3-6a29ebc8e32c)
+![htstego-gui](https://github.com/efeciftci/htstego/assets/3438150/e36e9874-bda1-4732-bc13-ca22f8cbb7dd)
 
-![htstego-extract-gui](https://github.com/efeciftci/htstego/assets/3438150/487b5092-9aae-44f9-acbf-0894a2a89a86)
-
+![htstego-extract-gui](https://github.com/efeciftci/htstego/assets/3438150/9e86ad47-44a2-46a5-8568-e096d0b2d1a2)
 
 ## References
 [1] Yi Yang and Shawn Newsam, "Bag-Of-Visual-Words and Spatial Extensions for Land-Use Classification," ACM SIGSPATIAL International Conference on Advances in Geographic Information Systems (ACM GIS), 2010.
