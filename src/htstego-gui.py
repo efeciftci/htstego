@@ -27,7 +27,7 @@ __version__ = '1.0'
 settings.init()
 
 
-def update_htmethod_state():
+def update_htoptions():
     if htmethod_var.get() == 'errdiff':
         errdiffmethod_drop.config(state=tk.NORMAL)
         bayersize_drop.config(state=tk.DISABLED)
@@ -94,119 +94,120 @@ w.title('Halftone Steganography Tool')
 w.resizable(False, False)
 
 f = tk.Frame(w)
-f.grid(padx=5,sticky='we')
+f.grid(padx=5, sticky='we')
 
-htmethod_frame = ttk.LabelFrame(f, text='Halftone Method')
-htmethod_frame.grid(column=0, row=0, sticky='we', padx=5, pady=5)
+htoptions_frame = ttk.LabelFrame(f, text='Halftoning Method')
+htoptions_frame.grid(row=0, column=0, sticky='nswe', padx=5, pady=5)
 
 htmethod_var = tk.StringVar()
 htmethod_var.set('errdiff')
 
-htmethod_errdiff_radio = tk.Radiobutton(htmethod_frame, text='Error Diffusion', variable=htmethod_var, value='errdiff', command=update_htmethod_state)
-htmethod_errdiff_radio.grid(column=0, row=0)
+htmethod_errdiff_radio = tk.Radiobutton(htoptions_frame, text='Error Diffusion', variable=htmethod_var, value='errdiff', command=update_htoptions)
+htmethod_errdiff_radio.grid(row=0, column=0, sticky='w')
 
-htmethod_pattern_radio = tk.Radiobutton(htmethod_frame, text='Ordered Dithering', variable=htmethod_var, value='ordered', command=update_htmethod_state)
-htmethod_pattern_radio.grid(column=1, row=0)
+htmethod_pattern_radio = tk.Radiobutton(htoptions_frame, text='Ordered Dithering', variable=htmethod_var, value='ordered', command=update_htoptions)
+htmethod_pattern_radio.grid(row=1, column=0, sticky='w')
 
-htmethod_pattern_radio = tk.Radiobutton(htmethod_frame, text='Pattern', variable=htmethod_var, value='pattern', command=update_htmethod_state)
-htmethod_pattern_radio.grid(column=2, row=0)
+htmethod_pattern_radio = tk.Radiobutton(htoptions_frame, text='Pattern', variable=htmethod_var, value='pattern', command=update_htoptions)
+htmethod_pattern_radio.grid(row=2, column=0, sticky='w')
 
-errdiffmethod_frame = tk.LabelFrame(f, text='Error Diffusion Method')
-errdiffmethod_frame.grid(column=1, row=0, sticky='we', padx=5, pady=5)
+errdiffmethod_frame = tk.LabelFrame(f, text='Halftoning Options', padx=5)
+errdiffmethod_frame.grid(row=0, column=1, sticky='nswe', padx=5, pady=5)
 
 errdiff_kernels = get_kernel_list()
-
 errdiffmethod_var = tk.StringVar()
 errdiffmethod_var.set(errdiff_kernels[0])
 
+errdiffmethod_label = tk.Label(errdiffmethod_frame, text='Kernel:')
+errdiffmethod_label.grid(row=0, column=0, sticky='w')
+
 errdiffmethod_drop = tk.OptionMenu(errdiffmethod_frame, errdiffmethod_var, *errdiff_kernels)
-errdiffmethod_drop.grid(column=0, row=0)
+errdiffmethod_drop.grid(row=0, column=1, sticky='we')
+
+bayersizes = [2, 4, 8]
+bayersize_var = tk.StringVar()
+bayersize_var.set(8)
+
+bayersize_label = tk.Label(errdiffmethod_frame, text='Bayer Size:')
+bayersize_label.grid(row=1, column=0, sticky='w')
+
+bayersize_drop = tk.OptionMenu(errdiffmethod_frame, bayersize_var, *bayersizes)
+bayersize_drop.grid(row=1, column=1, sticky='we')
+bayersize_drop.config(state=tk.DISABLED)
+
+cover_frame = tk.LabelFrame(f, text='Cover Image')
+cover_frame.grid(row=1, column=0, sticky='nswe', padx=5, pady=5, ipadx=5, ipady=5)
+
+cover_entry = tk.Entry(cover_frame)
+cover_entry.pack(side=tk.LEFT, expand=True, fill='x', padx=5)
+
+cover_button = tk.Button(cover_frame, text='Browse...', command=browse_cover_image)
+cover_button.pack(side=tk.RIGHT, padx=5)
+
+payload_frame = tk.LabelFrame(f, text='Payload')
+payload_frame.grid(row=1, column=1, sticky='nswe', padx=5, pady=5, ipadx=5, ipady=5)
+
+payload_entry = tk.Entry(payload_frame)
+payload_entry.pack(side=tk.LEFT, expand=True, fill='x', padx=5)
+
+payload_button = tk.Button(payload_frame, text='Browse...', command=browse_payload)
+payload_button.pack(side=tk.RIGHT, padx=5)
 
 output_mode_frame = tk.LabelFrame(f, text='Output Mode')
-output_mode_frame.grid(column=0, row=1, sticky='we', padx=5, pady=5)
+output_mode_frame.grid(row=2, column=0, sticky='nswe', padx=5, pady=5)
 
 outputmode_var = tk.StringVar()
 outputmode_var.set('binary')
 
 outputmode_binary = tk.Radiobutton(output_mode_frame, text='Binary', variable=outputmode_var, value='binary')
-outputmode_binary.grid(column=0, row=0)
+outputmode_binary.grid(row=0, column=0)
 
 outputmode_color = tk.Radiobutton(output_mode_frame, text='Color', variable=outputmode_var, value='col')
-outputmode_color.grid(column=1, row=0)
+outputmode_color.grid(row=0, column=1)
 
 nshares_frame = tk.LabelFrame(f, text='Number of Shares')
-nshares_frame.grid(column=1, row=1, sticky='we', padx=5, pady=5)
+nshares_frame.grid(row=2, column=1, sticky='nswe', padx=5, pady=5, ipadx=5, ipady=5)
 
-nshares_entry = tk.Entry(nshares_frame)
-nshares_entry.grid(column=0, row=0)
-
-cover_frame = tk.LabelFrame(f, text='Cover Image')
-cover_frame.grid(column=0, row=2, sticky='we', padx=5, pady=5)
-
-cover_entry = tk.Entry(cover_frame)
-cover_entry.pack(side=tk.LEFT, expand=True, fill='x')
-
-cover_button = tk.Button(cover_frame, text='Browse...', command=browse_cover_image)
-cover_button.pack(side=tk.RIGHT)
-
-payload_frame = tk.LabelFrame(f, text='Payload')
-payload_frame.grid(column=1, row=2, sticky='we', padx=5, pady=5)
-
-payload_entry = tk.Entry(payload_frame)
-payload_entry.pack(side=tk.LEFT, expand=True, fill='x')
-
-payload_button = tk.Button(payload_frame, text='Browse...', command=browse_payload)
-payload_button.pack(side=tk.RIGHT)
+nshares_entry = tk.Spinbox(nshares_frame, from_=3, to=100, textvariable=tk.IntVar(value=4))
+nshares_entry.grid(row=0, column=0, padx=5)
 
 options_frame = tk.LabelFrame(f, text='Options')
-options_frame.grid(column=0, row=3, sticky='we', padx=5, pady=5, rowspan=2)
+options_frame.grid(row=3, column=0, sticky='nswe', padx=5, pady=5)
 
 nooutputfiles_var = tk.IntVar()
 nooutputfiles_check = tk.Checkbutton(options_frame, text='Do not generate output files', variable=nooutputfiles_var, command=update_noregularoutput_state)
-nooutputfiles_check.grid(column=0, row=0, sticky='w')
+nooutputfiles_check.grid(row=0, column=0, sticky='w')
 
 regularoutput_var = tk.IntVar()
 regularoutput_check = tk.Checkbutton(options_frame, text='Generate regular output file', variable=regularoutput_var)
-regularoutput_check.grid(column=0, row=1, sticky='w')
+regularoutput_check.grid(row=1, column=0, sticky='w')
 
 compress_var = tk.IntVar()
 compress_check = tk.Checkbutton(options_frame, text='Compress payload before embedding', variable=compress_var)
-compress_check.grid(column=0, row=2, sticky='w')
-
-ordered_frame = tk.LabelFrame(f, text='Ordered Dithering Bayer Matrix Size')
-ordered_frame.grid(column=1, row=3, sticky='wne', padx=5, pady=5)
-
-bayersizes = [2, 4, 8]
-
-bayersize_var = tk.StringVar()
-bayersize_var.set(8)
-
-bayersize_drop = tk.OptionMenu(ordered_frame, bayersize_var, *bayersizes)
-bayersize_drop.grid(column=0, row=0)
-bayersize_drop.config(state=tk.DISABLED)
+compress_check.grid(row=2, column=0, sticky='w')
 
 outputformat_frame = tk.LabelFrame(f, text='Output Format')
-outputformat_frame.grid(column=1, row=4, sticky='wne', padx=5, pady=5)
+outputformat_frame.grid(row=3, column=1, sticky='nwe', padx=5, pady=5)
 
 outputformat_var = tk.StringVar()
 outputformat_var.set('json')
 
-outputformat_json = tk.Radiobutton(outputformat_frame, text='JSON', variable=outputformat_var, value='json')
-outputformat_json.grid(column=0, row=0)
-
 outputformat_csv = tk.Radiobutton(outputformat_frame, text='CSV', variable=outputformat_var, value='csv')
-outputformat_csv.grid(column=1, row=0)
+outputformat_csv.grid(row=0, column=0, sticky='w')
+
+outputformat_json = tk.Radiobutton(outputformat_frame, text='JSON', variable=outputformat_var, value='json')
+outputformat_json.grid(row=1, column=0, sticky='w')
 
 outputformat_xml = tk.Radiobutton(outputformat_frame, text='XML', variable=outputformat_var, value='xml')
-outputformat_xml.grid(column=2, row=0)
+outputformat_xml.grid(row=2, column=0, sticky='w')
 
 start_button = tk.Button(f, text='Start', command=generate_output)
-start_button.grid(column=0, row=5, pady=5, columnspan=2)
+start_button.grid(row=4, column=0, pady=5, columnspan=2)
 
 result_frame = tk.LabelFrame(f, text='Results')
-result_frame.grid(column=0, row=6, columnspan=2, sticky='we', padx=5, pady=5)
+result_frame.grid(row=5, column=0, columnspan=2, sticky='we', padx=5, pady=5)
 
 result_text = tk.Text(result_frame, height=7)
-result_text.grid(column=0, row=0, sticky='we')
+result_text.grid(row=0, column=0, sticky='we')
 
 w.mainloop()
