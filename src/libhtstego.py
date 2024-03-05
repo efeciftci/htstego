@@ -19,9 +19,10 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import json
-import os.path
+import os
 import zlib
 import xml.dom.minidom as minidom
+from datetime import datetime
 from fractions import Fraction
 from scipy import stats as st
 from skimage import io, metrics
@@ -135,6 +136,23 @@ def convertHalftoneToMatrix(inputMatrix, sWidth, sHeight):
     return outputMatrix
 
 
+def generateOutputDirectory():
+    if not os.path.exists('output'):
+        os.makedirs('output')
+
+    currentDateTime = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+    outputDirs = [d for d in os.listdir('output') if d.startswith(currentDateTime)]
+    if outputDirs:
+        lastDir = sorted(outputDirs, key=lambda x: int(x.split('-')[-1]))[-1]
+        lastNum = int(lastDir.split('-')[-1])
+        print(lastNum)
+        dirName = f'{currentDateTime}-{lastNum+1}'
+    else:
+        dirName = f'{currentDateTime}-0'
+
+    os.makedirs(f'output/{dirName}')
+    return f'output/{dirName}'
+
 def output_formatter(params, output_format):
     output = ''
     if output_format == 'csv':
@@ -221,11 +239,10 @@ def htstego_errdiff(NSHARES, coverFile, payloadFile, errDiffMethod, outputMode):
         normalOutput = normalOutput[:, :, 0]
 
     if settings.nofileout == False:
-        if not os.path.exists('output'):
-            os.makedirs('output')
+        outDir = generateOutputDirectory()
         imfile = os.path.basename(coverFile).rsplit('.', 1)[0]
         if settings.regularoutput == True:
-            normalOutputPath = f'output/{imfile}_hterrdiff{outputMode[:3]}_regular_{errDiffMethod}.png'
+            normalOutputPath = f'{outDir}/{imfile}_hterrdiff{outputMode[:3]}_regular_{errDiffMethod}.png'
             io.imsave(normalOutputPath, normalOutput)
         stegoOutputPaths = []
 
@@ -236,7 +253,7 @@ def htstego_errdiff(NSHARES, coverFile, payloadFile, errDiffMethod, outputMode):
         if outputMode == 'binary':
             stegoImage = stegoImage[:, :, 0]
         if settings.nofileout == False:
-            stegoOutputPaths.append(f'output/{imfile}_hterrdiff{outputMode[:3]}_stego_msg{payloadSize}_{i+1}of{NSHARES}_{errDiffMethod}.png')
+            stegoOutputPaths.append(f'{outDir}/{imfile}_hterrdiff{outputMode[:3]}_stego_msg{payloadSize}_{i+1}of{NSHARES}_{errDiffMethod}.png')
             io.imsave(stegoOutputPaths[i], stegoImage)
 
         cA = None if len(stegoImage.shape) == 2 else 2
@@ -304,11 +321,10 @@ def htstego_ordered(NSHARES, coverFile, payloadFile, bayerN, outputMode):
         normalOutput = normalOutput[:, :, 0]
 
     if settings.nofileout == False:
-        if not os.path.exists('output'):
-            os.makedirs('output')
+        outDir = generateOutputDirectory()
         imfile = os.path.basename(coverFile).rsplit('.', 1)[0]
         if settings.regularoutput == True:
-            normalOutputPath = f'output/{imfile}_htordered{outputMode[:3]}_regular_bayer{bayerN}.png'
+            normalOutputPath = f'{outDir}/{imfile}_htordered{outputMode[:3]}_regular_bayer{bayerN}.png'
             io.imsave(normalOutputPath, normalOutput)
         stegoOutputPaths = []
 
@@ -317,7 +333,7 @@ def htstego_ordered(NSHARES, coverFile, payloadFile, bayerN, outputMode):
         if outputMode == 'binary':
             stegoImage = stegoImage[:, :, 0]
         if settings.nofileout == False:
-            stegoOutputPaths.append(f'output/{imfile}_htordered{outputMode[:3]}_stego_msg{payloadSize}_{i+1}of{NSHARES}_bayer{bayerN}.png')
+            stegoOutputPaths.append(f'{outDir}/{imfile}_htordered{outputMode[:3]}_stego_msg{payloadSize}_{i+1}of{NSHARES}_bayer{bayerN}.png')
             io.imsave(stegoOutputPaths[i], stegoImage)
 
         cA = None if len(stegoImage.shape) == 2 else 2
@@ -405,11 +421,10 @@ def htstego_pattern(NSHARES, coverFile, payloadFile, outputMode):
         normalOutput = normalOutput[:, :, 0]
 
     if settings.nofileout == False:
-        if not os.path.exists('output'):
-            os.makedirs('output')
+        outDir = generateOutputDirectory()
         imfile = os.path.basename(coverFile).rsplit('.', 1)[0]
         if settings.regularoutput == True:
-            normalOutputPath = f'output/{imfile}_htpat{outputMode[:3]}_regular.png'
+            normalOutputPath = f'{outDir}/{imfile}_htpat{outputMode[:3]}_regular.png'
             io.imsave(normalOutputPath, normalOutput)
         stegoOutputPaths = []
 
@@ -418,7 +433,7 @@ def htstego_pattern(NSHARES, coverFile, payloadFile, outputMode):
         if outputMode == 'binary':
             stegoImage = stegoImage[:, :, 0]
         if settings.nofileout == False:
-            stegoOutputPaths.append(f'output/{imfile}_htpat{outputMode[:3]}_stego_msg{payloadSize}_{i+1}of{NSHARES}.png')
+            stegoOutputPaths.append(f'{outDir}/{imfile}_htpat{outputMode[:3]}_stego_msg{payloadSize}_{i+1}of{NSHARES}.png')
             io.imsave(stegoOutputPaths[i], stegoImage)
 
         cA = None if len(stegoImage.shape) == 2 else 2

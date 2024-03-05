@@ -34,7 +34,7 @@ if __name__ == '__main__':
         __import__('htstego-extract-gui')
         sys.exit(0)
 
-    parser.add_argument('--extract-from', type=str, help='extract from images in this directory')
+    parser.add_argument('--extract-from', required=True, type=str, help='extract from images in this directory')
     parser.add_argument('--htmethod', type=str, required=True, choices=['errdiff', 'ordered', 'pattern'], help='halftoning method')
 
     if len(sys.argv) == 1:

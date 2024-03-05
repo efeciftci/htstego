@@ -58,12 +58,12 @@ When executed as above, the following output will be displayed:
 
       {"status": "ok", "halftoning_method": "errdiff", "errdiff_kernel": "floyd", "bayer_size": "N/A", "output_color": "binary", "number_of_shares": 4, "cover_file": "cover_imgs/airplane80.tif", "payload_file": "payloads/payload128.txt", "payload_compression": false, "avg_snr": 21.8918, "avg_psnr": 24.0863, "avg_ssim": 0.9916}
 
-and the following files will be created:
+and the following files will be created in a timestamped subdirectory under the output directory:
 
-      output/airplane80_hterrdiffbin_stego_msg128_1of4_floyd.png
-      output/airplane80_hterrdiffbin_stego_msg128_2of4_floyd.png
-      output/airplane80_hterrdiffbin_stego_msg128_3of4_floyd.png
-      output/airplane80_hterrdiffbin_stego_msg128_4of4_floyd.png
+      airplane80_hterrdiffbin_stego_msg128_1of4_floyd.png
+      airplane80_hterrdiffbin_stego_msg128_2of4_floyd.png
+      airplane80_hterrdiffbin_stego_msg128_3of4_floyd.png
+      airplane80_hterrdiffbin_stego_msg128_4of4_floyd.png
 
 where each file is a stego image carrying different portions of the payload.
 
@@ -76,14 +76,14 @@ Available options for `htstego-extract.py`:
       --extract-from EXTRACT_FROM           extract from images in this directory
       --htmethod {errdiff,ordered,pattern}  halftoning method
 
-By default, images in the `output` directory will be used for extraction, but this can be overridden with the `--extract-from` option. The specified directory must contain only and only the carrier images. `--htmethod` option must be used to specify which extraction method will be used.
+The directory specified with the `--extract-from` argument must contain only and only a single set of carrier images (e.g., the timestamped subdirectories under the `output` directory). `--htmethod` option must be used to specify which extraction method will be used.
 
 ### Example
 
       cd src
-      ./htstego-extract.py --htmethod pattern
+      ./htstego-extract.py --htmethod errdiff --extract-from output/2024-03-05-14-06-40-0/
 
-Assuming the output directory contains the whole set of images generated with the error diffusion method, the following output will be produced:
+Assuming the specified directory contains the whole set of images generated with the error diffusion method, the following output will be produced:
 
       Result: Donec ut mauris sit amet ...
 

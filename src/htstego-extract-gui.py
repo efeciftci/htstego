@@ -69,7 +69,6 @@ output_frame.grid(column=1, row=0, sticky='we', padx=5, pady=5)
 
 output_entry = tk.Entry(output_frame)
 output_entry.pack(side=tk.LEFT, expand=True, fill='x')
-output_entry.insert(0, 'output/')
 
 output_button = tk.Button(output_frame, text='Browse...', command=browse_output)
 output_button.pack(side=tk.RIGHT)
