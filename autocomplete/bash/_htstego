@@ -11,7 +11,7 @@ _htstego.py() {
     prev="${COMP_WORDS[COMP_CWORD-1]}"
 
     case "${prev}" in
-        -h|--help|-v|--version)
+        -h|--help|-v|--version|--gui)
             return 0
             ;;
         --htmethod)
@@ -46,7 +46,7 @@ _htstego.py() {
             ;;
     esac
 
-    local options="--htmethod --output-color --cover --payload --nshares --kernel --bayer-size --output-format --no-output-files --generate-regular-output --silent --compress-payload"
+    local options="--gui --htmethod --output-color --cover --payload --nshares --kernel --bayer-size --output-format --no-output-files --generate-regular-output --silent --compress-payload"
     COMPREPLY=($(compgen -W "${options}" -- "${cur}"))
 
     return 0

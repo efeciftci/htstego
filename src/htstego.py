@@ -29,6 +29,12 @@ settings.init()
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=f'Halftone Steganography Utility Version {__version__}')
     parser.add_argument('-v', '--version', action='version', version=f'%(prog)s {__version__}')
+    parser.add_argument('--gui', action='store_true', help='switch to graphical user interface')
+
+    args_first, args_second = parser.parse_known_args()
+    if args_first.gui:
+        __import__('htstego-gui')
+        sys.exit(0)
 
     args_required = parser.add_argument_group('Required Options')
     args_required.add_argument('--htmethod', type=str, required=True, choices=['errdiff', 'ordered', 'pattern'], help='halftoning method')
@@ -54,7 +60,7 @@ if __name__ == '__main__':
         parser.print_help()
         sys.exit(0)
 
-    args = parser.parse_args()
+    args = parser.parse_args(args_second)
     settings.nofileout = args.no_output_files if args.no_output_files else False
     settings.regularoutput = args.generate_regular_output if args.generate_regular_output else False
     settings.nostdout = args.silent if args.silent else False

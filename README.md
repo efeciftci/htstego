@@ -23,6 +23,7 @@ Available options for `htstego.py`:
 
       -h, --help                            show this help message and exit
       -v, --version                         show program's version number and exit
+      --gui                                 switch to graphical user interface
 
 Required Options:
 
@@ -71,6 +72,7 @@ Available options for `htstego-extract.py`:
 
       -h, --help                            show this help message and exit
       -v, --version                         show program's version number and exit
+      --gui                                 switch to graphical user interface
       --extract-from EXTRACT_FROM           extract from images in this directory
       --htmethod {errdiff,ordered,pattern}  halftoning method
 

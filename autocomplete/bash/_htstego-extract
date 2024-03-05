@@ -7,7 +7,7 @@ _htstego-extract.py() {
     prev="${COMP_WORDS[COMP_CWORD-1]}"
 
     case "${prev}" in
-        -h|--help|-v|--version)
+        -h|--help|-v|--version|--gui)
             return 0
             ;;
         --htmethod)
@@ -22,7 +22,7 @@ _htstego-extract.py() {
             ;;
     esac
 
-    local options="--htmethod --extract-from"
+    local options="--gui --htmethod --extract-from"
     COMPREPLY=($(compgen -W "${options}" -- "${cur}"))
 
     return 0

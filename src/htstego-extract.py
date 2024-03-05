@@ -27,6 +27,13 @@ __version__ = '1.0'
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=f'Halftone Steganography Extraction Utility Version {__version__}')
     parser.add_argument('-v', '--version', action='version', version=f'%(prog)s {__version__}')
+    parser.add_argument('--gui', action='store_true', help='switch to graphical user interface')
+    
+    args_first, args_second = parser.parse_known_args()
+    if args_first.gui:
+        __import__('htstego-extract-gui')
+        sys.exit(0)
+
     parser.add_argument('--extract-from', type=str, help='extract from images in this directory')
     parser.add_argument('--htmethod', type=str, required=True, choices=['errdiff', 'ordered', 'pattern'], help='halftoning method')
 
@@ -34,7 +41,7 @@ if __name__ == '__main__':
         parser.print_help()
         sys.exit(0)
 
-    args = parser.parse_args()
+    args = parser.parse_args(args_second)
 
     dirName = args.extract_from if args.extract_from else 'output'
     if args.htmethod == 'errdiff':

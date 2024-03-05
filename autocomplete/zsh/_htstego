@@ -9,6 +9,7 @@ function _htstego.py() {
     _arguments \
         '(-h --help)'{-h,--help}'[show help message]' \
         '(-v --version)'{-v,--version}'[show program version]' \
+        '--gui[switch to graphical user interface]' \
         '--htmethod[halftoning method]::halftoning method:(errdiff ordered pattern)' \
         '--output-color[output color]::output color:(binary color)' \
         '--cover[input image]:file:_files' \

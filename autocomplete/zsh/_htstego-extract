@@ -5,6 +5,7 @@ function _htstego-extract.py() {
     _arguments \
         '(-h --help)'{-h,--help}'[show help message]' \
         '(-v --version)'{-v,--version}'[show program version]' \
+        '--gui[switch to graphical user interface]' \
         '--htmethod[halftoning method]::halftoning method:(errdiff ordered pattern)' \
         '--extract-from[extract from images in this directory]:directory:_directories'
         
