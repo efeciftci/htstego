@@ -25,15 +25,16 @@ from libhtstego import htstego_errdiff_extract, htstego_ordered_extract, htstego
 __version__ = '1.0'
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description=f'Halftone Steganography Extraction Utility Version {__version__}')
-    parser.add_argument('-v', '--version', action='version', version=f'%(prog)s {__version__}')
-    parser.add_argument('--gui', action='store_true', help='switch to graphical user interface')
+    gui_parser = argparse.ArgumentParser(add_help=False)
+    gui_parser.add_argument('-v', '--version', action='version', version=f'%(prog)s {__version__}')
+    gui_parser.add_argument('--gui', action='store_true', help='switch to graphical user interface')
     
-    args_first, args_second = parser.parse_known_args()
+    args_first, args_second = gui_parser.parse_known_args()
     if args_first.gui:
         __import__('htstego-extract-gui')
         sys.exit(0)
 
+    parser = argparse.ArgumentParser(description=f'Halftone Steganography Extraction Utility Version {__version__}', parents=[gui_parser])
     parser.add_argument('--extract-from', required=True, type=str, help='extract from images in this directory')
     parser.add_argument('--htmethod', type=str, required=True, choices=['errdiff', 'ordered', 'pattern'], help='halftoning method')
 
