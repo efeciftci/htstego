@@ -91,9 +91,28 @@ Assuming the specified directory contains the whole set of images generated with
 
 Both utilities can also be used via a simple graphical user interface (`htstego-gui.py` and `htstego-extract-gui.py`). For GNU/Linux distributions such as Debian or Ubuntu, `python3-tk` package (and its dependencies) must be installed. For other distributions, please refer to the distribution documentation.
 
-![fig_fig5b](https://github.com/efeciftci/htstego/assets/3438150/6162a466-5bfa-4d77-9b0f-1e7d8aaa044d)
+![fig_fig6a](https://efeciftci.com/assets/github/com.efeciftci.htstego_0.png)
 
-![fig_fig5d](https://github.com/efeciftci/htstego/assets/3438150/b5fdc447-a542-4a50-8438-89392be88510)
+![fig_fig6c](https://efeciftci.com/assets/github/com.efeciftci.htstego_1.png)
+
+## Citation
+The steganography and extraction algorithm used by this software has been introduced in the following paper:
+
+> Çiftci, E., & Sümer, E. (2022). A novel steganography method for binary and color halftone images. PeerJ Computer Science, 8, e1062.
+
+```
+@article{cciftci2022novel,
+  title={A novel steganography method for binary and color halftone images},
+  author={{\c{C}}iftci, Efe and S{\"u}mer, Emre},
+  journal={PeerJ Computer Science},
+  volume={8},
+  pages={e1062},
+  year={2022},
+  publisher={PeerJ Inc.}
+}
+```
+
+Please cite this paper if you use `HtStego` in your research.
 
 ## References
 [1] Yi Yang and Shawn Newsam, "Bag-Of-Visual-Words and Spatial Extensions for Land-Use Classification," ACM SIGSPATIAL International Conference on Advances in Geographic Information Systems (ACM GIS), 2010.
