@@ -96,11 +96,25 @@ Both utilities can also be used via a simple graphical user interface (`htstego-
 ![fig_fig6c](https://efeciftci.com/assets/github/com.efeciftci.htstego_1.png)
 
 ## Citation
-The steganography and extraction algorithm used by this software has been introduced in the following paper:
+`HtStego` has been featured in the following paper:
 
-> Çiftci, E., & Sümer, E. (2022). A novel steganography method for binary and color halftone images. PeerJ Computer Science, 8, e1062.
+> Çiftci, E., Sümer, E. (2024). HtStego: A halftone steganography utility. SoftwareX, 27, 101780. https://doi.org/10.1016/j.softx.2024.101780
+
+The steganography and extraction algorithm used by `HtStego` has been introduced in the following paper:
+
+> Çiftci, E., Sümer, E. (2022). A novel steganography method for binary and color halftone images. PeerJ Computer Science, 8, e1062. https://doi.org/10.7717/peerj-cs.1062
 
 ```
+@article{cciftci2024htstego,
+  title={HtStego: A halftone steganography utility},
+  author={{\c{C}}iftci, Efe and S{\"u}mer, Emre},
+  journal={SoftwareX},
+  volume={27},
+  pages={101780},
+  year={2024},
+  publisher={Elsevier}
+}
+
 @article{cciftci2022novel,
   title={A novel steganography method for binary and color halftone images},
   author={{\c{C}}iftci, Efe and S{\"u}mer, Emre},
@@ -111,8 +125,7 @@ The steganography and extraction algorithm used by this software has been introd
   publisher={PeerJ Inc.}
 }
 ```
-
-Please cite this paper if you use `HtStego` in your research.
+Please cite these papers if you use `HtStego` in your research.
 
 ## References
 [1] Yi Yang and Shawn Newsam, "Bag-Of-Visual-Words and Spatial Extensions for Land-Use Classification," ACM SIGSPATIAL International Conference on Advances in Geographic Information Systems (ACM GIS), 2010.
